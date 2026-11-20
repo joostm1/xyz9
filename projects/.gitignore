@@ -1,0 +1,17 @@
+
+**/.terraform/*
+**/*.zip
+**/*tfplan*
+**/*.tfstate
+**/*.tfstate.*
+crash.log
+crash.*.log
+**/*.tfvars
+**/*override.tf
+**/.terraformrc
+**/terraform.rc
+**/.terraform
+**/.terraform/
+**/terraform.lock.hcl
+**/node_modules/
+**/package-lock.json

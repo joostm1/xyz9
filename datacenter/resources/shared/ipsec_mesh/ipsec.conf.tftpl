@@ -1,0 +1,37 @@
+config setup
+  charondebug=ike 1,knl 1,cfg 1
+  uniqueids=no
+conn %default
+  ike=aes256-sha256-modp2048,aes256-sha256-modp1024!
+  esp=aes256-sha256-modp2048,aes256-sha256-modp1024!
+  keyexchange=ikev2
+  compress=no
+  # Edgerouter Cavium offload does not support compression
+  # dmesg: cavium_alloc_n_fill: Protocol type not valid
+%{ for idx, cacert in ca_abs ~}
+ca XYZ9_${idx}
+  cacert=${cacert}
+  auto=add
+%{ endfor ~}
+# mesh connections to peers, left is me, right is peer
+# IKE stays on IPv4 (right=*-ipv4): EdgeOS cannot encapsulate IPv4-in-IPv6.
+# Inner TS is one conn per address family. The old working egx snapshot
+# (xyz9sp1 assets/er6p/ipsec.conf) had leftsubnet=172.17.114.0/24 only;
+# rightsubnet could mix v4+v6. Putting fd17:114::/64 on leftsubnet in that
+# same conn made a mixed-family CHILD_SA. EdgeOS 4.9 / Cavium then installs
+# the SA but does not match IPv4 packets (status up, 0 bytes).
+%{ for peer_name in peer_names ~}
+%{ for family in families ~}
+%{ if length(ts[me.name][family]) > 0 && length(ts[peer_name][family]) > 0 ~}
+conn ${me.name}-${peer_name}-${family}
+  leftcert=${cert_abs}
+  leftsubnet=${join(",", ts[me.name][family])}
+  leftid=${me.id}
+  left=${me.local_ike}
+  rightsubnet=${join(",", ts[peer_name][family])}
+  rightid=${members[peer_name].id}
+  right=${members[peer_name].remote_ike} # tunnel over ipv4
+  auto=start
+%{ endif ~}
+%{ endfor ~}
+%{ endfor ~}

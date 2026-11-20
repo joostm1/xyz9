@@ -1,0 +1,242 @@
+{
+  "$schema": "../schemas/projects.schema.json",
+  "name": "datafactory",
+  "description": "My little data factory",
+  "roots": {},
+  "projects": {},
+  "goal": "To learn how to build the best data factory so far",
+  "owner": "joost@xyz9.net",
+  "owner_group": "datafactory-owners",
+  "hub_location": "apc1",
+  "devops": {
+    "project": {
+      "name": "datafactory"
+    },
+    "git_acls": {
+      "read": {
+        "GenericRead": "Allow"
+      },
+      "contribute": {
+        "GenericRead": "Allow",
+        "GenericContribute": "Allow",
+        "CreateBranch": "Allow",
+        "CreateTag": "Allow",
+        "PullRequestContribute": "Allow"
+      },
+      "admin-override": {
+        "Administer": "Allow",
+        "GenericRead": "Allow",
+        "GenericContribute": "Allow",
+        "ForcePush": "Allow",
+        "CreateBranch": "Allow",
+        "CreateTag": "Allow",
+        "ManageNote": "Allow",
+        "PolicyExempt": "Allow",
+        "PullRequestContribute": "Allow",
+        "PullRequestBypassPolicy": "Allow",
+        "ManagePermissions": "Allow"
+      }
+    },
+    "permission_sets": {
+      "project-admin": {
+        "project_group": "Project Administrators",
+        "git": {
+          "all": "admin-override"
+        }
+      },
+      "platform-engineer": {
+        "project_group": "Readers",
+        "git": {
+          "all": "contribute"
+        }
+      },
+      "dataset-engineer": {
+        "project_group": "Readers",
+        "git": {
+          "all": "read",
+          "own.adf": "contribute"
+        }
+      },
+      "dataset-analyst": {
+        "project_group": "Readers",
+        "git": {
+          "all": "read"
+        }
+      }
+    },
+    "role_permission_sets": {
+      "platform": {
+        "admin": "project-admin",
+        "engineer": "platform-engineer"
+      },
+      "dataset": {
+        "engineer": "dataset-engineer",
+        "analyst": "dataset-analyst"
+      }
+    }
+  },
+  "scopes": {
+    "platform": {
+      "roles": ["admin", "engineer"]
+    },
+    "datasets": {
+      "nyt": {
+        "roles": ["engineer", "analyst"]
+      },
+      "knmi": {
+        "roles": ["engineer", "analyst"]
+      }
+    }
+  },
+  "layers": {
+    "source": {
+      "azure": { "container": "ingest" },
+      "snowflake": { "schema": "source", "warehouse": "ingest" }
+    },
+    "transform": {
+      "snowflake": { "schema": "transform", "warehouse": "transform" }
+    },
+    "reporting": {
+      "snowflake": { "schema": "reporting", "warehouse": "reporting" }
+    }
+  },
+  "snowflake": {
+    "provisioner_username": "TERRAFORM_PROVISIONER",
+    "terraform_provider_preview_features_enabled": [
+      "snowflake_system_get_privatelink_config_datasource",
+      "snowflake_system_get_snowflake_platform_info_datasource",
+      "snowflake_table_resource",
+      "snowflake_pipe_resource"
+    ],
+    "platform": {
+      "warehouse": {
+        "name": "PLATFORM",
+        "size": "XSMALL",
+        "auto_suspend": 60,
+        "auto_resume": true
+      },
+      "database": {
+        "name": "PLATFORM",
+        "comment": "Platform control-plane objects for Snowflake",
+        "parent_role_key": "platform-admin",
+        "schemas": {
+          "security": {
+            "name": "SECURITY",
+            "comment": "Security policy support objects"
+          }
+        }
+      },
+      "network_policies": {
+        "allow-all": {
+          "name": "ALLOW_ALL",
+          "allowed_ip_list": ["0.0.0.0/0"],
+          "comment": "Allow all IPv4 ingress for bootstrap access"
+        },
+        "dbt-cloud": {
+          "name": "DBT_CLOUD",
+          "allowed_ip_list": [
+            "52.3.77.232/32",
+            "3.214.191.130/32",
+            "34.233.79.135/32"
+          ],
+          "comment": "Allow dbt Cloud IPv4 ingress"
+        }
+      }
+    },
+    "datasets": {
+      "resource_monitors": {
+        "default": {
+          "credit_quota": 20,
+          "frequency": "MONTHLY",
+          "notify_triggers": [50, 80, 90],
+          "suspend_trigger": 100,
+          "suspend_immediate_trigger": 110
+        }
+      },
+      "warehouses": {
+        "ingest": {
+          "parent_dataset_roles": ["engineer"],
+          "resource_monitor": "default",
+          "size": "XSMALL",
+          "auto_suspend": 60,
+          "auto_resume": true
+        },
+        "transform": {
+          "parent_dataset_roles": ["engineer"],
+          "resource_monitor": "default",
+          "size": "XSMALL",
+          "auto_suspend": 60,
+          "auto_resume": true
+        },
+        "reporting": {
+          "parent_dataset_roles": ["engineer", "analyst"],
+          "resource_monitor": "default",
+          "size": "XSMALL",
+          "auto_suspend": 60,
+          "auto_resume": true
+        }
+      },
+      "schemas": {
+        "source": {
+          "comment": "Source data landing schema",
+          "schema_privileges": {
+            "dataset_roles": {
+              "engineer": ["USAGE"]
+            },
+            "warehouse_roles": {
+              "ingest": [
+                "USAGE",
+                "CREATE TABLE",
+                "CREATE VIEW",
+                "CREATE STAGE",
+                "CREATE FILE FORMAT"
+              ],
+              "transform": ["USAGE"]
+            }
+          },
+          "future_object_privileges": {
+            "warehouse_roles": {
+              "transform": {
+                "TABLES": ["SELECT"],
+                "VIEWS": ["SELECT"]
+              }
+            }
+          }
+        },
+        "transform": {
+          "comment": "Transformation working schema",
+          "schema_privileges": {
+            "warehouse_roles": {
+              "transform": [
+                "USAGE",
+                "CREATE TABLE",
+                "CREATE VIEW",
+                "CREATE STAGE",
+                "CREATE FILE FORMAT"
+              ]
+            }
+          }
+        },
+        "reporting": {
+          "comment": "Reporting consumption schema",
+          "schema_privileges": {
+            "dataset_roles": {
+              "analyst": ["USAGE"]
+            },
+            "warehouse_roles": {
+              "transform": ["USAGE", "CREATE TABLE", "CREATE VIEW"]
+            }
+          },
+          "future_object_privileges": {
+            "dataset_roles": {
+              "analyst": {
+                "TABLES": ["SELECT"],
+                "VIEWS": ["SELECT"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

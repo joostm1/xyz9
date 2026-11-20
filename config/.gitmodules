@@ -1,0 +1,4 @@
+[submodule "org"]
+	path = org
+	url = ../config
+	branch = develop

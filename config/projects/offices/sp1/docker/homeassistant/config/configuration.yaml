@@ -1,0 +1,34 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+http:
+  server_port: 8123
+  cors_allowed_origins:
+    - https://google.com
+    - https://www.home-assistant.io
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+    - ::1
+
+# http:
+#   server_port: 8123
+#   ssl_certificate: /tls/fullchain.pem
+#   ssl_key: /tls/privkey.pem
+#   cors_allowed_origins:
+#   - https://google.com
+#   - https://www.home-assistant.io
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+zha:
+  zigpy_config:
+    ota:
+      ikea_provider: true

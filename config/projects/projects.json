@@ -1,0 +1,9 @@
+{
+  "$schema": "../schemas/projects.schema.json",
+  "name": "projects",
+  "description": "Bootstrap other projects",
+  "roots": {},
+  "projects": {},
+  "owner": "joost@xyz9.net",
+  "owner_group": "projects-owners"
+}

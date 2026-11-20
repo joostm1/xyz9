@@ -1,0 +1,112 @@
+- id: '1735329780303'
+  alias: AvondBuiten
+  description: ''
+  triggers:
+  - event: sunset
+    offset: 0
+    trigger: sun
+  conditions: []
+  actions:
+  - metadata: {}
+    data:
+      transition: 167
+      color_temp_kelvin: 3774
+    target:
+      device_id:
+      - 431e93f0668d9adee54658d39eef25d8
+      - 886d622b5730f1f555bd2d09fed6b59d
+    action: light.turn_on
+  mode: single
+- id: '1735333133376'
+  alias: Welterusten
+  description: ''
+  triggers:
+  - at: '23:15:00'
+    trigger: time
+  conditions: []
+  actions:
+  - metadata: {}
+    data: {}
+    target:
+      area_id: veranda
+      entity_id:
+      - light.aanrecht
+      - light.zolder1_2
+      - light.zolder2_2
+      device_id:
+      - e9a24b1e81ea2b4331c1a956ab05f03d
+      - 11bcfc0ffb5fe97f3033a17ca32ee50e
+    action: light.turn_off
+  - type: turn_off
+    device_id: f33790eee76e782e13eb1825990f6139
+    entity_id: 42ecb24c252403614dc63e4a2a980b87
+    domain: remote
+  - type: turn_off
+    device_id: 431e93f0668d9adee54658d39eef25d8
+    entity_id: 38e1d5fc34f332b6dce5eb438a40d319
+    domain: light
+  - type: turn_off
+    device_id: 886d622b5730f1f555bd2d09fed6b59d
+    entity_id: 207f0b4415b19c21cce5196c9cf1d176
+    domain: light
+  - type: turn_off
+    device_id: 26e4e72038918e12cdeac705f894ebaf
+    entity_id: 7fe3078d40bd17e6138cf859230e540b
+    domain: light
+  mode: single
+- id: '1736889399592'
+  alias: OchtendBuiten
+  description: Doe 's ochtends buitenverlichting als 't nog donker is
+  triggers:
+  - at: 07:15:00
+    trigger: time
+  conditions:
+  - condition: sun
+    before: sunrise
+  actions:
+  - wait_for_trigger:
+    - event: sunrise
+      offset: 0
+      trigger: sun
+    timeout:
+      hours: 1
+      minutes: 30
+      seconds: 0
+      milliseconds: 0
+  - metadata: {}
+    data: {}
+    target:
+      device_id:
+      - 431e93f0668d9adee54658d39eef25d8
+      - 886d622b5730f1f555bd2d09fed6b59d
+      - 73244da3ea4f837a3308395ccef4d4f2
+    action: light.turn_off
+  mode: single
+- id: '1737152115579'
+  alias: AvondBinnen
+  description: ''
+  triggers:
+  - event: sunset
+    offset: 0
+    trigger: sun
+  conditions:
+  - condition: state
+    entity_id: person.joost
+    state: home
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+  actions:
+  - type: turn_on
+    device_id: 26e4e72038918e12cdeac705f894ebaf
+    entity_id: 7fe3078d40bd17e6138cf859230e540b
+    domain: light
+  - metadata: {}
+    data:
+      kelvin: 4436
+    target:
+      area_id: keuken
+      entity_id: light.aanrecht
+    action: light.turn_on
+  mode: single

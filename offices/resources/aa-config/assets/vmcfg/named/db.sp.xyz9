@@ -1,0 +1,64 @@
+$ORIGIN .
+$TTL 10800	; 3 hours
+sp.xyz9.net		IN SOA	u1i.xyz9.net. joost.xyz9.net. (
+				2517       ; serial
+				10800      ; refresh (3 hours)
+				15         ; retry (15 seconds)
+				604800     ; expire (1 week)
+				10800      ; minimum (3 hours)
+				)
+			NS	u1i.xyz9.net.
+$ORIGIN sp.xyz9.net.
+$TTL 43200	; 12 hours
+5609502147746901786	A	172.17.114.13
+			TXT	"00656fd390d2fcd4d432b2743cac8a9427"
+android-48ba83e3907e6624 A	172.17.114.162
+			TXT	"317cb17b0456c6758e41e78702f7f77883"
+$TTL 10800	; 3 hours
+egx			A	172.17.114.4
+$TTL 43200	; 12 hours
+Galaxy-S9		A	172.17.114.108
+			TXT	"31447b9767910a4a83e0e49d1f8908749b"
+iPad-van-Hans		A	172.17.114.155
+			TXT	"31faab3f35337f4668b740a824056816b7"
+iPhone			A	172.17.114.61
+			TXT	"3144ba1eb1459e31370d0d28ba9f7196c0"
+iPhone7vanLies		A	172.17.114.126
+			TXT	"31899fa6064286dcde57ff5319807279a8"
+iPhonevJonathan		A	172.17.114.166
+			TXT	"31dfe360b60138be3003faea286f4c506b"
+Jasper			A	172.17.114.122
+			TXT	"31c8dfdce5026481e7aa2057d98770b0c4"
+joost-mbp		A	172.17.114.163
+			TXT	"31c073935e7083dca69248e19065065aef"
+joostbk			A	172.17.114.83
+			TXT	"31449012c388c37aca397f4c64abfba518"
+kleinduimpje		A	172.17.114.23
+			TXT	"317292c4935eaf315f47ed83c2ab855a50"
+localhost		A	172.17.114.75
+			TXT	"3112b374783ae86cd6c3cd1bae2cc4960e"
+$TTL 10800	; 3 hours
+meterkast		A	172.17.114.160
+N300A-IP		A	172.17.114.46
+netx			A	172.17.114.5
+$TTL 43200	; 12 hours
+nucanne			A	172.17.114.14
+			TXT	"31e268b16f60ab8405bd06d7b82b75fb65"
+Ring			A	172.17.114.145
+			TXT	"006a8c9d25044b082998005ba7a8a9bf88"
+s10joost		A	172.17.114.86
+			TXT	"31fc713c4cc9e51c0caf7ee704aed7fac1"
+$TTL 10800	; 3 hours
+schuur			A	172.17.114.17
+$TTL 43200	; 12 hours
+SF-JORIS		TXT	"3129bd169ea3ecbffd912e82a76e009c89"
+$TTL 10800	; 3 hours
+smlom			A	172.17.114.1
+u1i			A	172.17.1.5
+u2i			A	172.17.1.6
+w10i			A	172.17.1.6
+wx			A	172.17.114.2
+$TTL 43200	; 12 hours
+XBOX			TXT	"318f2ee2301fe608b4bc462f07cd4038fd"
+$TTL 10800	; 3 hours
+zolder			A	172.17.114.159

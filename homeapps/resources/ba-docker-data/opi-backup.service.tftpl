@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup OPI vital data to ${account}
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 ${script}
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

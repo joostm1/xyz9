@@ -1,0 +1,28 @@
+{
+  "name": "xyz9",
+  "about": {
+    "goal": "learn enterprise IT: identity, networking, landing zones, and data platforms — with explicit tradeoffs.",
+    "dns_domain": "xyz9.net",
+    "x509": {
+      "org": "XYZ9 Inc.",
+      "ca": {
+        "country": "NL",
+        "common_name": "XYZ9 Root CA",
+        "vault_name": "xyz9-ca",
+        "validity_period_hours": 87600,
+        "max_path_length": 0
+      }
+    }
+  },
+  "suppliers": {
+    "msft": {
+      "devops": {
+        "org_name": "xyz9ops"
+      },
+      "azure": {
+        "org_name": "xyz9"
+      }
+    }
+  },
+  "stakeholders": {}
+}
