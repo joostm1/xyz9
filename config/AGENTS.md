@@ -4,22 +4,23 @@
 
 XYZ9 is a learning environment for enterprise IT: identity, networking, landing zones, applications, and data platforms, with explicit trade-offs. `org.json` defines organization-wide facts such as the DNS domain, supplier identifiers, and X.509 CA metadata.
 
-This repository (`config`) is the shared organization catalog and Terraform toolkit. Project repositories include it as the `org/` submodule. It contains:
+This repository (`config`) is the shared organization catalog and Terraform toolkit. In this consolidated `stack` repository, project folders reference it through a local `org/` path. It contains:
 
 - `projects/*.json`: declarative project seeds
 - `schemas/projects.schema.json`: the shared project contract
 - `terraform/`: orchestration and reusable Terraform modules
-- `projects/offices/<office>/`: static files associated with an office
+- `projects/homeapps/<office>/`: static files associated with office-hosted applications
 
 ## Projects and responsibilities
 
-The catalog currently describes five projects:
+The public stack repository includes four projects:
 
-1. `offices` owns physical-office network data and shared location services. For Stratusplein 1 (`sp1`) it catalogs the EdgeRouter-facing LAN, WAN, DHCP, DNS, forwarding, and address-space configuration. Its Terraform creates the organization CA, derives Cloudflare records from live office hosts, owns the Let's Encrypt account, issues the `egx` certificate, and owns its Azure Pipelines definition. It does not deploy the base EdgeRouter configuration.
-2. `homeapps` owns applications hosted on the OPI system at `sp1`: application certificates, TLS installation, static host configuration, Key Vault-backed host secrets, generated Docker Compose projects, and selected off-site application-data backups. Its current services include Home Assistant, Docker Mailserver, nginx, PostgreSQL, UniFi, and Vaultwarden.
-3. `projects` is the bootstrap control plane for all catalog projects. It creates project owner identities and groups, certificates, `${projectName}-config` secrets, shared-subscription access, backend access grants, and optional Azure DevOps projects. It owns bootstrap identity; `datacenter` does not.
-4. `datacenter` is the centrally controlled Azure network and landing-zone project. It creates central configuration, private DNS, regional hub VNets and Linux NVAs, the IPsec/DNS mesh, office-router mesh files, and connected project spokes. For projects with `hub_location`, it contributes spoke connectivity under `projects.datacenter`.
-5. `datafactory` is a cloud data-platform project used to learn Azure Data Factory and Snowflake architecture. It provisions the Snowflake landing zone, Entra SSO and SCIM, Azure DevOps repositories and pipelines, shared and per-dataset ADF resources, private connectivity, and dataset-specific Azure and Snowflake resources.
+1. `projects` is the bootstrap control plane for all catalog projects. It creates project owner identities and groups, certificates, `${projectName}-config` secrets, shared-subscription access, backend access grants, and optional Azure DevOps projects. It owns bootstrap identity; `datacenter` does not.
+2. `datacenter` is the centrally controlled Azure network and landing-zone project. It creates central configuration, private DNS, regional hub VNets and Linux NVAs, the IPsec/DNS mesh, office-router mesh files, and connected project spokes. For projects with `hub_location`, it contributes spoke connectivity under `projects.datacenter`.
+3. `datafactory` is a cloud data-platform project used to learn Azure Data Factory and Snowflake architecture. It provisions the Snowflake landing zone, Entra SSO and SCIM, Azure DevOps repositories and pipelines, shared and per-dataset ADF resources, private connectivity, and dataset-specific Azure and Snowflake resources.
+4. `config` provides shared catalog data, schemas, and reusable Terraform modules consumed by the project repositories.
+
+`homeapps` remains a private companion repository in Azure DevOps. Its application catalog and static files stay under `config/projects/homeapps/` so shared configuration remains versioned in this public stack.
 
 Repository-specific `AGENTS.md` files supplement this guidance with local roots and operational details.
 
@@ -38,20 +39,17 @@ Pass the foundation coordinates through `~/.tfbackend.hcl` and `~/.tfvars`. Neve
 
 XYZ9 then applies:
 
-1. `offices/resources/aa-ca` creates `xyz9-ca` in `xz9kviac`.
-2. `projects` creates project identities, credentials, config secrets, and access grants.
-3. `offices/resources/aa-config` and `datacenter` create shared location and cloud connectivity.
-4. `homeapps` runs after `offices/resources/aa-config`; it consumes the offices ACME state.
-5. Connected workloads such as `datafactory` run after `datacenter/resources/ca-spokes`.
+1. `projects` creates project identities, credentials, config secrets, and access grants.
+2. `datacenter` builds hub-and-spoke connectivity and office-router IPsec mesh artifacts.
+3. Connected workloads such as `datafactory` run after `datacenter/resources/ca-spokes`.
+4. `homeapps` (private companion repository) applies application workloads on spoke-connected hosts.
 
-Roots that manage office hosts also require network access to `egx` and OPI at `sp1`. Terraform imports require the named live resource to exist.
+Roots that manage office hosts require network access to `egx` and OPI at `sp1`. Terraform imports require the named live resource to exist.
 
 Within a project repository, `resources/Makefile` applies Terraform roots in lexical folder order and destroys them in reverse order. Folder prefixes encode lifecycle order; they do not by themselves prove a remote-state dependency.
 
 Current root sequences are:
 
-- `offices`: `aa-ca`, `aa-config`
-- `homeapps`: `aa-acme`, `aa-apps`, `ba-docker-data`
 - `projects`: `aa-self`, `ba-projects`
 - `datacenter`: `aa-config`, `ba-hubs`, `bb-offices`, `ca-spokes`
 - `datafactory`: `am-sfbootstrap`, `as-sflz`, `au-devops`, `ba-azure`
@@ -76,7 +74,7 @@ The intended contribution namespaces are:
 
 For example, a living `datafactory` object receives bootstrap identity and subscription data under `projects.projects`, connectivity under `projects.datacenter`, and its own root results under `roots`.
 
-Do not assume every repository uses the complete model. `offices` and `homeapps` currently consume bootstrap config but do not emit a full `output "config"` chain. Merge precedence also varies by repository; inspect the implementation rather than assuming that `local.config` always has the same construction.
+Do not assume every repository uses the complete model. Merge precedence varies by repository; inspect the implementation rather than assuming that `local.config` always has the same construction.
 
 The `projects` repository's current `resources/ba-projects` implementation reconstructs target config secrets from the seed and `projects.projects`; reapplying it after another project has contributed can discard that later contribution. Until that writer preserves the existing object, reapply `datacenter/resources/ca-spokes` after `projects` for connected projects and inspect the plan carefully.
 
@@ -86,7 +84,7 @@ Never put runtime IDs, generated credentials, private keys, or contributed confi
 
 Shared modules under `terraform/modules` include recursive merges, keyed-map joins, scope/tree enumeration, SSH file installation, Azure networking and RBAC helpers, and Entra client-credential acquisition. Keep reusable organization-wide behavior here; keep project-specific modules in the project repository.
 
-Use this repository as the `org/` submodule and respect the revision pinned by the consuming repository. Commit shared changes in `org` before updating and committing the parent repository's submodule reference.
+Within `stack`, shared changes in `config` are consumed immediately by project folders through their local `org` path.
 
 Put resources with similar lifecycles in one Terraform root. When multiple roots are required, use alphabetically ordered lifecycle prefixes such as `resources/af-bootstrap` and `resources/al-nextphase`.
 

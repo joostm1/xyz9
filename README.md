@@ -1,43 +1,36 @@
-# stack
+# xyz9 stack
 
-This repository consolidates the Terraform project repositories in apply order:
+Public infrastructure-as-code repository for the XYZ9 learning environment.
 
-1. `config`
-2. `offices`
-3. `projects`
-4. `homeapps`
-5. `datacenter`
-6. `datafactory`
+The stack focuses on:
 
-The goal is to keep existing backend state coordinates stable while consolidating source control.
+- shared control-plane bootstrapping (`projects`)
+- hub-and-spoke connectivity (`datacenter`)
+- a cloud data-platform workload (`datafactory`)
+- shared org catalog, schemas, and Terraform tooling (`config`)
 
-## Layout
+## Repository layout
 
-Each project is preserved as a top-level folder so existing conventions continue to work:
+- `config/`: shared organization catalog (`org.json`, `projects/*.json`), schemas, and shared Terraform modules
+- `projects/`: bootstrap identities, access, certificates, and per-project config-secret handoffs
+- `datacenter/`: hub VNets, NVAs, office IPsec mesh artifacts, and spoke connectivity contributions
+- `datafactory/`: Azure Data Factory + Snowflake learning workload
 
-- `project_name` remains the folder name (for example `offices`, `projects`, `homeapps`)
-- Root module folder names under `resources/` stay unchanged (for example `aa-config`, `ba-hubs`)
-- Remote state keys stay `<root>.tfstate`
+## Private companion repository
 
-## State migration
-
-No Terraform state object move is expected when these invariants are preserved:
-
-- State container remains per project (for example `offices`, `projects`, `homeapps`, `datacenter`, `datafactory`)
-- State key remains per root folder (for example `aa-config.tfstate`)
-
-If either the project folder name or root folder names change later, plan a dedicated state move.
+`homeapps` intentionally stays outside this repository in a private Azure DevOps repository.
 
 ## Orchestration
 
-- Run all project resources in apply order: `make plan` or `make apply`
-- Run all project resources in reverse order for teardown: `make destroy`
+- `make list`: list orchestrated top-level projects
+- `make validate`: run validate for each project that has `resources/`
+- `make plan` / `make apply`: run in apply order
+- `make destroy`: run in reverse order
 
 The top-level `Makefile` delegates to each `*/resources/Makefile`.
 
-## Immediate follow-up
+## Notes for contributors
 
-1. Run `make validate` at repo root.
-2. Run project-level `make plan` and compare against current expected plans.
-3. Update CI pipeline paths to this consolidated repository.
-4. Archive source repos after successful cutover.
+- `project_name` convention remains the folder name (for example `projects`, `datacenter`)
+- Terraform state keys remain `<root>.tfstate`
+- Shared intent and architecture live in `config/AGENTS.md`
