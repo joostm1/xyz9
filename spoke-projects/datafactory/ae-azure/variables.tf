@@ -1,4 +1,4 @@
-# module inputs; same-project config from au-devops remote_state
+# module inputs; same-project config from ad-devops remote_state
 variable "org_name" {
   type = string
 }
@@ -19,6 +19,11 @@ variable "storage_account_name" {
 }
 variable "resource_group_name" {
   type = string
+}
+variable "cloudflare_api_token" {
+  type      = string
+  sensitive = true
+  default   = ""
 }
 
 locals {

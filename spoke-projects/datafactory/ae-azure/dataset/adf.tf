@@ -1,6 +1,6 @@
 # one ADF in the team RG; links the shared SHIR and can write the ext-stage
 module "adf" {
-  source = "../../../modules/adf"
+  source = "../../modules/adf"
   kind   = "dataset"
   factory = {
     name                = var.names.adf

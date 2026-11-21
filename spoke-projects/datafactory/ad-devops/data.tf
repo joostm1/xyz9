@@ -11,7 +11,7 @@ data "terraform_remote_state" "as_sflz" {
     resource_group_name  = var.resource_group_name
     storage_account_name = var.storage_account_name
     container_name       = var.project_name
-    key                  = "as-sflz.tfstate"
+    key                  = "ac-sflz.tfstate"
     use_azuread_auth     = true
     subscription_id      = split("/", var.corp_vault_id)[2]
     tenant_id            = var.tenant_id

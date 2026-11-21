@@ -1,4 +1,4 @@
-# module inputs; same-project config from as-sflz remote_state
+# module inputs; same-project config from ac-sflz remote_state
 variable "org_name" {
   type = string
 }

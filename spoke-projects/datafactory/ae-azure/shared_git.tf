@@ -1,6 +1,6 @@
-# first commit creates main on au-devops shared (Clean init leaves no branches)
+# first commit creates main on ad-devops shared (Clean init leaves no branches)
 resource "azuredevops_git_repository_file" "adf_publish_template" {
-  repository_id       = local.config.roots["au-devops"].shared_repo.id
+  repository_id       = local.config.roots["ad-devops"].shared_repo.id
   file                = "pipelines/adf-publish.yml"
   branch              = "refs/heads/main"
   commit_message      = "Seed pipelines/adf-publish.yml"

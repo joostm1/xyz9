@@ -1,8 +1,8 @@
-# Entra groups from as-sflz; platform keys are enumerator keys, dataset keys drop the dataset- prefix
+# Entra groups from ac-sflz; platform keys are enumerator keys, dataset keys drop the dataset- prefix
 # dataset-nyt-engineer + git { all = read, own.adf = contribute } + repos nyt.adf/knmi.adf/shared/datafactory.adf
 # → dataset-nyt-engineer:all (project-level read), dataset-nyt-engineer:own.adf:nyt.adf (contribute)
 locals {
-  entra_roles = merge(local.config.roots["as-sflz"].roles.platform, local.config.roots["as-sflz"].roles.datasets)
+  entra_roles = merge(local.config.roots["ac-sflz"].roles.platform, local.config.roots["ac-sflz"].roles.datasets)
   role_assignments = {
     for key, entry in module.project_roles.by_key : key => {
       key         = key

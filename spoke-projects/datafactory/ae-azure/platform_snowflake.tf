@@ -8,15 +8,15 @@ resource "snowflake_service_user" "platform_adf" {
   login_name                     = "platform_adf"
   display_name                   = "ADF service user for platform"
   comment                        = "Key-pair user for the platform data factory linked service."
-  default_role                   = local.config.roots["as-sflz"].platform.adf_role
-  default_warehouse              = local.config.roots["as-sflz"].platform.warehouse
+  default_role                   = local.config.roots["ac-sflz"].platform.adf_role
+  default_warehouse              = local.config.roots["ac-sflz"].platform.warehouse
   default_secondary_roles_option = "NONE"
   disabled                       = "false"
   rsa_public_key                 = tls_private_key.platform_adf.public_key_pem
   provider                       = snowflake.useradmin
 }
 resource "snowflake_grant_account_role" "platform_adf" {
-  role_name = local.config.roots["as-sflz"].platform.adf_role
+  role_name = local.config.roots["ac-sflz"].platform.adf_role
   user_name = snowflake_service_user.platform_adf.name
   provider  = snowflake.securityadmin
 }

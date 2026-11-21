@@ -64,3 +64,6 @@ provider "snowflake" {
   preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
   alias                    = "initial"
 }
+provider "azuredevops" {
+  org_service_url = "https://dev.azure.com/${local.org.suppliers.msft.devops.org_name}"
+}
