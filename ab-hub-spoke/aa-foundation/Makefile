@@ -2,7 +2,7 @@
 org				:= $(shell jq -r .name $(abspath ../../aa-catalog/catalog/org.json))
 project				:= datacenter
 state_container_name	:= $(project)
-state_key				:= $(notdir $(CURDIR))
+state_key				:= aa-config
 state_key_file_name		:= $(state_key).tfstate
 planz					:= $(project)-$(state_key).tfplan.zip
 tfopts					:= \

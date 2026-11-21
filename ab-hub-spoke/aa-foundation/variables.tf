@@ -51,9 +51,9 @@ locals {
     }
   }
   entra_scope_role_groups = {
-    for group_key, group in local.scope_role_groups : group_key => {
-      display_name = azuread_group.function_scope_role_groups[group.key].display_name
-      object_id    = azuread_group.function_scope_role_groups[group.key].object_id
+    for group_key, group in azuread_group.function_scope_role_groups : group_key => {
+      display_name = group.display_name
+      object_id    = group.object_id
     }
   }
 }
