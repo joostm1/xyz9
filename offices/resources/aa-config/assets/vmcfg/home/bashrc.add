@@ -1,2 +1,0 @@
-eval `/usr/bin/keychain --eval --nogui --confhost`
-source $HOME/.keychain/$HOSTNAME-sh

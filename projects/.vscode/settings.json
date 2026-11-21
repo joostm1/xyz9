@@ -1,7 +1,0 @@
-{
-  "chat.mcp.serverSampling": {
-    "xyz9pd/.vscode/mcp.json: terraform": {
-      "allowedModels": ["copilot/auto"]
-    }
-  }
-}

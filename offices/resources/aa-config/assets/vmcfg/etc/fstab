@@ -1,2 +1,0 @@
-# UNCONFIGURED FSTAB FOR BASE SYSTEM
-\\sa1sxyz9.file.core.windows.net\share1 /share1 drvfs "metadata,rw,noatime,uid=1000,gid=1000,umask=22,fmask=11" 0 0

@@ -12,8 +12,8 @@ Thanks for your interest in improving `xyz9`.
 ## Where to start
 
 1. Read `README.md` for project purpose and layout
-2. Read `config/AGENTS.md` for architecture intent and conventions
-3. Inspect the relevant project folder (`projects`, `datacenter`, `datafactory`)
+2. Read `aa-catalog/catalog/AGENTS.md` for architecture intent and conventions
+3. Inspect the relevant apply-order group (`aa-catalog`, `ab-hub-spoke`, `az-hub-projects`)
 
 ## Development workflow
 
@@ -30,12 +30,12 @@ make validate
 make plan
 ```
 
-Per project:
+Per group/project:
 
 ```sh
-make -C datacenter/resources validate
-make -C projects/resources validate
-make -C datafactory/resources validate
+make -C ab-hub-spoke validate
+make -C aa-catalog/catalog/terraform validate
+make -C az-hub-projects/datafactory validate
 ```
 
 ## Pull request expectations

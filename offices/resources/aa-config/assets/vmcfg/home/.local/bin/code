@@ -1,4 +1,0 @@
-#!/bin/sh
-
-"/mnt/c/Program Files/Microsoft VS Code"/code.exe $@
-

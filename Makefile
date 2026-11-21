@@ -1,23 +1,23 @@
-PROJECTS := config offices projects homeapps datacenter datafactory
+GROUPS := aa-catalog ab-hub-spoke az-hub-projects
 
 .DEFAULT_GOAL := list
 
 list:
-	@printf '%s\n' $(PROJECTS)
+	@printf '%s\n' $(GROUPS)
 
 init validate plan apply clean:
-	@set -e; for project in $(PROJECTS); do \
-		if [ -d "$$project/resources" ]; then \
-			printf '\n==> %s/resources: %s\n' "$$project" "$@"; \
-			$(MAKE) -C "$$project/resources" "$@"; \
+	@set -e; for group in $(GROUPS); do \
+		if [ -f "$$group/Makefile" ]; then \
+			printf '\n==> %s: %s\n' "$$group" "$@"; \
+			$(MAKE) -C "$$group" "$@"; \
 		fi; \
 	done
 
 destroy:
-	@set -e; for project in datafactory datacenter homeapps projects offices; do \
-		if [ -d "$$project/resources" ]; then \
-			printf '\n==> %s/resources: destroy\n' "$$project"; \
-			$(MAKE) -C "$$project/resources" destroy; \
+	@set -e; for group in az-hub-projects ab-hub-spoke; do \
+		if [ -f "$$group/Makefile" ]; then \
+			printf '\n==> %s: destroy\n' "$$group"; \
+			$(MAKE) -C "$$group" destroy; \
 		fi; \
 	done
 

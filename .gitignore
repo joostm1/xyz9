@@ -1,0 +1,12 @@
+**/.terraform/
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.*
+**/*tfplan*
+**/*.zip
+**/.tfvars
+**/*.tfvars
+**/*override.tf
+**/.terraformrc
+**/node_modules/
+**/.generated/

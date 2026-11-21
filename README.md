@@ -1,55 +1,56 @@
-# xyz9 stack
+# xyz9 hub-spoke stack
 
-Public infrastructure-as-code repository for the XYZ9 learning environment.
+Public infrastructure-as-code repository for a hub-spoke platform, organized for first-time DevOps operators.
 
-## Purpose
+The structure follows one simple rule:
 
-This repository is a practical reference for operating a small but realistic platform:
+- data structure first: top-level folders are apply-order groups
+- each group contains root modules in apply order
+- each root module is self-contained and readable
 
-- identity and access bootstrapping
-- hub-and-spoke network topology
-- workload onboarding on shared connectivity
-- cross-project configuration handoffs
+## Apply-order groups
 
-It is intended to be useful both as working infrastructure code and as a learning artifact.
+- `aa-catalog/`
+  - shared catalog data, schema contracts, and reusable Terraform modules
+- `ab-hub-spoke/`
+  - hub-spoke connectivity roots (`aa-foundation`, `ba-hubs`, `bb-sp1-connectivity`, `ca-spokes`)
+- `az-hub-projects/`
+  - projects connected to the hub
+  - current example: `datafactory` with roots in apply order
 
-## What is in scope
+Private repositories in Azure DevOps (`xyz9ops`):
 
-- `config/`: shared org catalog (`org.json`, `projects/*.json`), schemas, and reusable Terraform modules
-- `projects/`: bootstrap control plane (project identities, certs, access grants, config-secret seeds)
-- `datacenter/`: hubs, VPN mesh artifacts, and spoke connectivity contributions
-- `datafactory/`: workload example that consumes shared platform capabilities
+- `homeapps` (private)
+- `projects` (private)
+- `offices` (private)
 
-`homeapps` intentionally stays outside this repository in a private Azure DevOps repository.
-
-## Repository guide
-
-- Architecture and flow: `docs/ARCHITECTURE.md`
-- Contributor workflow: `CONTRIBUTING.md`
-- Security policy: `SECURITY.md`
-- Current priorities: `docs/ROADMAP.md`
-- Repository file map: `docs/REPOSITORY_MAP.md`
+Only connectivity to `sp1` stays here, under `ab-hub-spoke/bb-sp1-connectivity`.
 
 ## Quick start
 
 Prerequisites:
 
 - Terraform CLI
-- Azure CLI auth for the target tenant/subscription
-- Access to the bootstrap backend and key vault coordinates
+- Azure CLI auth for target tenant/subscription
+- backend and variable files (`~/.tfbackend.hcl`, `~/.tfvars`)
 
-Common commands:
+Repository commands:
 
-- `make list` - list orchestrated top-level projects
-- `make validate` - validate all project roots
-- `make plan` - plan in apply order
-- `make apply` - apply in apply order
-- `make destroy` - destroy in reverse order
+- `make list`
+- `make validate`
+- `make plan`
+- `make apply`
+- `make destroy`
 
-The top-level `Makefile` delegates to each `*/resources/Makefile`.
+Group commands (examples):
 
-## Design conventions
+- `make -C ab-hub-spoke list`
+- `make -C ab-hub-spoke plan`
+- `make -C az-hub-projects/datafactory plan`
 
-- Project folder name is the Terraform `project_name`
-- State key per root is `<root>.tfstate`
-- Shared intent and architecture source lives in `config/AGENTS.md`
+## Documentation
+
+- Architecture: `docs/ARCHITECTURE.md`
+- Repository map: `docs/REPOSITORY_MAP.md`
+- Contributing: `CONTRIBUTING.md`
+- Security: `SECURITY.md`

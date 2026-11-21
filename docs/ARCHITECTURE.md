@@ -1,49 +1,57 @@
 # Architecture
 
-## Overview
+## Design principle
 
-`xyz9` models a small enterprise-style platform with clear ownership boundaries:
+The repository is structured around configuration exchange and apply order:
 
-- `projects` bootstraps project identities, access, and config-seed handoffs
-- `datacenter` provides shared network/connectivity foundations
-- `datafactory` is a workload project consuming shared platform capabilities
-- `config` provides the shared catalog, schema contracts, and reusable modules
+- top-level folders are apply-order groups
+- each group contains root modules in explicit lifecycle order
+- configuration lives in data first (`catalog`), then flows into roots
 
-## Configuration model
+This keeps control flow simple and predictable.
 
-Each project starts from a seed JSON under `config/projects/*.json`.
+## Public structure
 
-Configuration then flows through:
+- `aa-catalog/catalog`
+  - shared project seeds, schemas, and reusable Terraform modules
+- `ab-hub-spoke`
+  - `aa-foundation`
+  - `ba-hubs`
+  - `bb-sp1-connectivity`
+  - `ca-spokes`
+- `az-hub-projects/datafactory`
+  - `ab-sfbootstrap`
+  - `ac-sflz`
+  - `ad-devops`
+  - `ae-azure`
+
+## Configuration exchange model
+
+Project seeds are read from `aa-catalog/catalog/projects/*.json`.
+
+Runtime configuration exchange uses:
 
 1. seed JSON in git
 2. project config secret in Key Vault (`${projectName}-config`)
-3. Terraform root `output "config"` handoffs
+3. root `output "config"` handoff objects
 
-Contributions are namespaced under:
+Contribution ownership remains namespaced:
 
 - `roots[<state_key>]` for same-project root contributions
 - `projects[<contributing_project>]` for cross-project contributions
 
-## Execution order
+## Execution model
 
-Current high-level apply flow:
+- root `Makefile` runs group folders in apply order
+- each group `Makefile` runs its own roots in apply order
+- destroy runs in reverse order
 
-1. `projects`
-2. `datacenter`
-3. workload projects (for example `datafactory`)
-4. private companion projects (for example `homeapps` in private Azure DevOps)
+## Private boundaries
 
-Within a project, roots run in lexical order via `resources/Makefile`.
+The following repositories are private in Azure DevOps (`xyz9ops`):
 
-## Networking direction
+- `homeapps`
+- `projects`
+- `offices`
 
-The public stack prioritizes hub-and-spoke connectivity:
-
-- hubs and shared network services in `datacenter`
-- office router mesh artifacts in `datacenter/resources/bb-offices`
-- workload spokes and connectivity contributions in `datacenter/resources/ca-spokes`
-
-## Non-goals
-
-- This repo does not host private application runtime repositories
-- This repo does not include production secrets or runtime credentials
+Only connectivity to `sp1` remains in the public hub-spoke group.

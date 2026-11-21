@@ -1,1 +1,0 @@
-../org/terraform/resources.mk
