@@ -25,4 +25,4 @@ You can expect acknowledgement and initial triage feedback as soon as practical.
 
 ## Hardening baseline
 
-See `aa-catalog/catalog/AGENTS.md` for current baseline constraints and cloud hardening defaults used by this stack.
+See `aa-catalog/AGENTS.md` for current baseline constraints and cloud hardening defaults used by this stack.

@@ -23,7 +23,7 @@ variable "resource_group_name" {
   type = string
 }
 locals {
-  org_folder = "../../aa-catalog/catalog"
+  org_folder = "../../aa-catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
   # strip $schema so it does not leak into remote state via merge → output.config
   project = {

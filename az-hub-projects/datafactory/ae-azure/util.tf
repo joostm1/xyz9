@@ -22,7 +22,7 @@ resource "azurerm_storage_account" "util" {
 }
 # spoke blob DNS; the SHIR VM uploads Run Command stdout over this endpoint
 module "util_pe_blob" {
-  source                      = "../../../../aa-catalog/catalog/terraform/modules/az/private_endpoint"
+  source                      = "../../../aa-catalog/terraform/modules/az/private_endpoint"
   name                        = local.resource_names.az.util_pe_blob
   location                    = local.config.projects.datacenter.spoke.rg.location
   resource_group_name         = local.config.projects.datacenter.spoke.rg.name

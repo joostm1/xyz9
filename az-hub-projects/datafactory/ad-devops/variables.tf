@@ -22,8 +22,8 @@ variable "resource_group_name" {
 }
 
 locals {
-  org     = jsondecode(file("../../../../aa-catalog/catalog/org.json"))
-  project = jsondecode(file("../../../../aa-catalog/catalog/projects/${var.project_name}.json"))
+  org     = jsondecode(file("../../../aa-catalog/org.json"))
+  project = jsondecode(file("../../../aa-catalog/projects/${var.project_name}.json"))
   # our predecessor
   config   = data.terraform_remote_state.as_sflz.outputs.config
   datasets = local.config.scopes.datasets

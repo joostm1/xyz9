@@ -1,0 +1,58 @@
+{
+  "$schema": "../schemas/projects.schema.json",
+  "name": "datacenter",
+  "description": "My little az datacenter",
+  "roots": {},
+  "projects": {},
+  "owner": "joost@xyz9.net",
+  "owner_group": "datacenter-owners",
+  "devops": {
+    "owner": "homeapps",
+    "project": {
+      "name": "xyz9it"
+    }
+  },
+  "credentials": {
+    "secret_names": ["cloudflare-dns-editzonekey", "cloudflare-dns-zoneid"]
+  },
+  "azure": {
+    "rg": {
+      "name": "rg-datacenter",
+      "location": "CentralIndia"
+    },
+    "private_dns_zones": [
+      "privatelink.blob.core.windows.net",
+      "privatelink.datafactory.azure.net",
+      "privatelink.vaultcore.azure.net",
+      "privatelink.eventgrid.azure.net",
+      "privatelink.snowflakecomputing.com",
+      "privatelink.snowflake.app"
+    ]
+  },
+  "scopes": {
+    "project": {
+      "roles": ["admin", "engineer"]
+    },
+    "regions": {
+      "apc": {
+        "roles": ["manager"]
+      }
+    }
+  },
+  "locations": {
+    "apc1": {
+      "region": "CentralIndia",
+      "address_space": ["172.16.64.0/20", "fd17:16:0:10::/60"],
+      "spokes_address_space": ["10.16.64.0/20", "fd10:0:0:0::/60"]
+    }
+  },
+  "offices": {
+    "sp1": {
+      "name": "stratusplein 1",
+      "network": {
+        "address_space": ["172.17.114.0/24", "fd17:114::/64"],
+        "router": "egx"
+      }
+    }
+  }
+}

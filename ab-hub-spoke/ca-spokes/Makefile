@@ -1,5 +1,5 @@
 # Makefile for terraform -- tame the beast
-org				:= $(shell jq -r .name $(abspath ../../aa-catalog/catalog/org.json))
+org				:= $(shell jq -r .name $(abspath ../../aa-catalog/org.json))
 project				:= datacenter
 state_container_name	:= $(project)
 state_key				:= $(notdir $(CURDIR))
@@ -31,10 +31,8 @@ submodule_tfs := $(foreach module,$(module_sources),$(wildcard $(module)/*.tf))
 # org.json and project JSON are read at plan time, so plan must rerun when they change.
 # aa-apps write_compose_inputs.py materializes .generated during plan; other roots omit it.
 tf_deps := $(root_module_tfs) $(submodule_tfs) $(tfvar_file) $(tfbackend_file) \
-	../../aa-catalog/catalog/org.json \
-	../../aa-catalog/catalog/projects/homeapps.json \
-	$(wildcard write_compose_inputs.py) \
-	$(shell find ../../aa-catalog/catalog/projects/homeapps/sp1/docker -type f 2>/dev/null)
+	../../aa-catalog/org.json \
+	$(wildcard write_compose_inputs.py)
 declared_modules_cmd := sed -n 's/^[[:space:]]*module[[:space:]]*"\([^"]*\)".*/\1/p' $(root_module_tfs) | sort -u
 plan: validate $(planz)
 	terraform show $(planz)

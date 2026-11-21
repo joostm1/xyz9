@@ -23,7 +23,7 @@ variable "resource_group_name" {
   type = string
 }
 locals {
-  org_folder = "../../aa-catalog/catalog"
+  org_folder = "../../aa-catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
   config     = data.terraform_remote_state.ba_hubs.outputs.config
   # lift aa-config contributions for spoke paths (project.rg, project.azure)

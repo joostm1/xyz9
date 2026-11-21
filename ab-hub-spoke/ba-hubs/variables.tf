@@ -28,7 +28,7 @@ variable "cloudflare_api_token" {
   default   = ""
 }
 locals {
-  org_folder = "../../aa-catalog/catalog"
+  org_folder = "../../aa-catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
   project    = jsondecode(file("${local.org_folder}/projects/${var.project_name}.json"))
   config     = data.terraform_remote_state.aa_config.outputs.config

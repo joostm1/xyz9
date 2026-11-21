@@ -36,21 +36,18 @@ resource "azurerm_key_vault" "project" {
   soft_delete_retention_days    = 7
 }
 resource "azurerm_role_assignment" "project_vault_owners" {
-  for_each = {
-    app   = local.config.projects.projects.identity.owner.app_object_id
-    group = local.config.projects.projects.identity.owner.group_object_id
-  }
+  for_each = local.project_vault_owner_principals
   scope                = azurerm_key_vault.project.id
   role_definition_name = "Key Vault Administrator"
   principal_id         = each.value
 }
 module "project_vault_rbac" {
-  source               = "../../../../aa-catalog/catalog/terraform/modules/az/wait_for_rbac"
-  for_each             = azurerm_role_assignment.project_vault_owners
+  source               = "../../../aa-catalog/terraform/modules/az/wait_for_rbac"
+  for_each             = local.project_vault_owner_principals
   scope                = azurerm_key_vault.project.id
   role_definition_name = "Key Vault Administrator"
-  object_id            = each.value.principal_id
-  assignment_id        = each.value.id
+  object_id            = each.value
+  assignment_id        = azurerm_role_assignment.project_vault_owners[each.key].id
 }
 resource "azurerm_key_vault_secret" "snowflake_provisioner" {
   for_each = {

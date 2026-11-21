@@ -15,7 +15,7 @@ resource "snowflake_execute" "disable_internal_stage_public_access" {
 }
 # --- internal stage PE in our VNet (approve at snowflake's end) ---
 module "pe_internal_stage_blob" {
-  source                      = "../../../../aa-catalog/catalog/terraform/modules/az/private_endpoint"
+  source                      = "../../../aa-catalog/terraform/modules/az/private_endpoint"
   private_connection_resource = data.snowflake_system_get_privatelink_config.snowflake_private_link.internal_stage
   location                    = local.config.projects.datacenter.spoke.rg.location
   name                        = local.resource_names.az.int_stage_pe_blob
@@ -49,7 +49,7 @@ resource "azurerm_private_endpoint" "pe_sflz_pvlinksvc" {
 }
 # get an access token for the snowflake private link approval call
 module "sflz_azure_access_token" {
-  source     = "../../../../aa-catalog/catalog/terraform/modules/entra/acquire_token_for_client"
+  source     = "../../../aa-catalog/terraform/modules/entra/acquire_token_for_client"
   tenant_id  = var.tenant_id
   client_id  = local.config.projects.projects.identity.owner.app_client_id
   p12_bundle = data.azurerm_key_vault_secret.owner_p12.value

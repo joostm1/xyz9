@@ -8,12 +8,12 @@ resource "snowflake_network_policy" "platform" {
 }
 # SECURITYADMIN owns the policies so as-sflz can DESCRIBE `ALLOW_ALL` on the SCIM integration
 resource "snowflake_grant_ownership" "platform_network_policy_securityadmin" {
-  for_each            = snowflake_network_policy.platform
+  for_each            = local.config.snowflake.platform.network_policies
   account_role_name   = "SECURITYADMIN"
   outbound_privileges = "COPY"
   on {
     object_type = "NETWORK POLICY"
-    object_name = each.value.name
+    object_name = snowflake_network_policy.platform[each.key].name
   }
   provider = snowflake.initial
 }

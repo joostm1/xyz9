@@ -94,7 +94,7 @@ resource "azurerm_role_assignment" "shir_vm_blob" {
 }
 # RBAC list can lag the assignment write; Run Command uploads stdout once the role is listed
 module "shir_vm_blob_rbac" {
-  source               = "../../../../aa-catalog/catalog/terraform/modules/az/wait_for_rbac"
+  source               = "../../../aa-catalog/terraform/modules/az/wait_for_rbac"
   scope                = azurerm_storage_container.shir_vm.id
   role_definition_name = "Storage Blob Data Contributor"
   object_id            = azurerm_windows_virtual_machine.shir.identity[0].principal_id

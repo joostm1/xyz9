@@ -32,9 +32,7 @@ submodule_tfs := $(foreach module,$(module_sources),$(wildcard $(module)/*.tf))
 # aa-apps write_compose_inputs.py materializes .generated during plan; other roots omit it.
 tf_deps := $(root_module_tfs) $(submodule_tfs) $(tfvar_file) $(tfbackend_file) \
 	../org.json \
-	../projects/homeapps.json \
-	$(wildcard write_compose_inputs.py) \
-	$(shell find ../projects/homeapps/sp1/docker -type f 2>/dev/null)
+	$(wildcard write_compose_inputs.py)
 declared_modules_cmd := sed -n 's/^[[:space:]]*module[[:space:]]*"\([^"]*\)".*/\1/p' $(root_module_tfs) | sort -u
 plan: validate $(planz)
 	terraform show $(planz)
