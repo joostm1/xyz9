@@ -1,6 +1,6 @@
 # datasets × layers; azure facet is the ingest-container guinea pig
 module "dataset_x_layer" {
-  source = "../../../aa-catalog/terraform/modules/map_join"
+  source = "../../../catalog/terraform/modules/map_join"
   left = {
     for dataset_key in keys(local.config.scopes.datasets) : dataset_key => {
       dataset_key = dataset_key
@@ -18,7 +18,7 @@ module "dataset_x_layer" {
   key_attrs        = ["dataset_key", "layer_key"]
 }
 module "dataset_x_layer_azure" {
-  source = "../../../aa-catalog/terraform/modules/map_join"
+  source = "../../../catalog/terraform/modules/map_join"
   left   = module.dataset_x_layer.by_key
   right = {
     for layer_key, layer in local.project.layers : layer_key => merge(layer.azure, {
@@ -37,7 +37,7 @@ resource "azurerm_storage_container" "layer" {
   container_access_type = "private"
 }
 module "layer_azure_x_dataset_role" {
-  source = "../../../aa-catalog/terraform/modules/map_join"
+  source = "../../../catalog/terraform/modules/map_join"
   left   = module.dataset_x_layer_azure.by_key
   right = merge([
     for schema_key, schema in local.project.snowflake.datasets.schemas : {

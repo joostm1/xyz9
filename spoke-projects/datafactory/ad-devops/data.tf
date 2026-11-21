@@ -23,7 +23,7 @@ data "azurerm_key_vault_secret" "snowflake" {
   key_vault_id = local.config.roots["am-sfbootstrap"].project_vault_id
 }
 module "project_roles" {
-  source          = "../../../aa-catalog/terraform/modules/scope_enumerator"
+  source          = "../../../catalog/terraform/modules/scope_enumerator"
   tree            = try(local.project.scopes, {})
   enum_key        = "roles"
   enum_value_name = "role"

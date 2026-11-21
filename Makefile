@@ -1,4 +1,4 @@
-GROUPS := aa-catalog ab-hub-spoke az-hub-projects
+GROUPS := catalog azhubs spoke-projects
 
 .DEFAULT_GOAL := list
 
@@ -14,7 +14,7 @@ init validate plan apply clean:
 	done
 
 destroy:
-	@set -e; for group in az-hub-projects ab-hub-spoke; do \
+	@set -e; for group in spoke-projects azhubs; do \
 		if [ -f "$$group/Makefile" ]; then \
 			printf '\n==> %s: destroy\n' "$$group"; \
 			$(MAKE) -C "$$group" destroy; \

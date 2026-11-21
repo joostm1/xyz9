@@ -22,8 +22,8 @@ variable "resource_group_name" {
 }
 
 locals {
-  org     = jsondecode(file("../../../aa-catalog/org.json"))
-  project = jsondecode(file("../../../aa-catalog/projects/${var.project_name}.json"))
+  org     = jsondecode(file("../../../catalog/org.json"))
+  project = jsondecode(file("../../../catalog/spoke-projects/${var.project_name}.json"))
   # our predecessor
   config = data.terraform_remote_state.am_sfbootstrap.outputs.config
   resource_names = {
@@ -69,7 +69,7 @@ locals {
     for c in try(data.azapi_resource_list.get_sf_end_ext_stage_queue.output.connections, []) : c.name
     if lower(try(c.private_endpoint_id, "")) == lower(snowflake_execute.external_stage_queue_private_endpoint.query_results[0].snowflake_resource_id)
   ])
-  storage_integration_client_id      = try(regex("client_id=([^&]+)", snowflake_storage_integration_azure.sflz.describe_output[0].consent_url), null)
+  storage_integration_client_id      = try(regex("client_id=([^&]+)", snowflake_storage_integration_azure.sflz.describe_output[0].consent_url)[0], null)
   notification_integration_client_id = try(snowflake_execute.notification_integration_azure[0].query_results[0].client_id, null)
   # SHOW uses the seed name so query_results is known at plan (not deferred on the integration resource)
   scim_integration_present = length(snowflake_execute.snowflake_entraid_scim_present.query_results) > 0

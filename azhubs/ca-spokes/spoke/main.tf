@@ -60,7 +60,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "spoke_vnet_dns_link" {
   registration_enabled = false
 }
 module "nsg" {
-  source      = "../../../aa-catalog/terraform/modules/az/nsg"
+  source      = "../../../catalog/terraform/modules/az/nsg"
   name        = "nsg"
   rg_name     = azurerm_resource_group.spoke_infra_rg.name
   rg_location = azurerm_resource_group.spoke_infra_rg.location

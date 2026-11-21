@@ -12,14 +12,14 @@ This keeps control flow simple and predictable.
 
 ## Public structure
 
-- `aa-catalog`
+- `catalog`
   - shared project seeds, schemas, and reusable Terraform modules
-- `ab-hub-spoke`
+- `azhubs`
   - `aa-foundation`
   - `ba-hubs`
   - `bb-sp1-connectivity`
   - `ca-spokes`
-- `az-hub-projects/datafactory`
+- `spoke-projects/datafactory`
   - `ab-sfbootstrap`
   - `ac-sflz`
   - `ad-devops`
@@ -27,7 +27,7 @@ This keeps control flow simple and predictable.
 
 ## Configuration exchange model
 
-Project seeds are read from `aa-catalog/projects/*.json`.
+Project seeds are read from `catalog/projects/*.json`.
 
 Runtime configuration exchange uses:
 

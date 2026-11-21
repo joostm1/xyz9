@@ -21,7 +21,7 @@ data "azurerm_key_vault_certificate_data" "datacenter_cacert" {
 }
 data "azuread_client_config" "current" {}
 module "scope_roles" {
-  source          = "../../aa-catalog/terraform/modules/scope_enumerator"
+  source          = "../../catalog/terraform/modules/scope_enumerator"
   tree            = local.config.scopes
   enum_key        = "roles"
   enum_value_name = "value"
@@ -49,7 +49,7 @@ resource "azurerm_resource_group" "project_rg" {
 }
 # role assignments on the resource group
 module "rg_role_assignments" {
-  source           = "../../aa-catalog/terraform/modules/az/role_assignments"
+  source           = "../../catalog/terraform/modules/az/role_assignments"
   entra_groups     = local.entra_scope_role_groups
   assignment_scope = azurerm_resource_group.project_rg.id
   role_assignments = {
@@ -86,7 +86,7 @@ resource "azurerm_role_assignment" "project_kv_data_roles" {
 }
 # functional role assignments on the vault
 module "kv_role_assignments" {
-  source           = "../../aa-catalog/terraform/modules/az/role_assignments"
+  source           = "../../catalog/terraform/modules/az/role_assignments"
   entra_groups     = local.entra_scope_role_groups
   assignment_scope = azurerm_key_vault.project_kv.id
   role_assignments = {

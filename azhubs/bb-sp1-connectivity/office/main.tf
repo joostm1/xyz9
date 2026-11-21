@@ -50,7 +50,7 @@ module "ipsec_mesh" {
   ca_pem   = var.config.project_ca.pem
 }
 module "ipsec_files" {
-  source      = "../../../aa-catalog/terraform/modules/remote_files"
+  source      = "../../../catalog/terraform/modules/remote_files"
   name        = "ipsec-${var.office.name}"
   remote_root = module.ipsec_mesh.remote_root
   sudo        = true

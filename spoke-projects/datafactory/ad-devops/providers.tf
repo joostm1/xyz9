@@ -7,6 +7,9 @@ terraform {
     use_azuread_auth     = true
   }
   required_providers {
+    azuredevops = {
+      source = "microsoft/azuredevops"
+    }
     azurerm = {
       source = "hashicorp/azurerm"
     }
@@ -51,11 +54,11 @@ provider "azurerm" {
   }
 }
 provider "snowflake" {
-  organization_name        = split("-", lower(data.azurerm_key_vault_secret.snowflake_account["snowflake-account-identifier"].value))[0]
-  account_name             = split("-", lower(data.azurerm_key_vault_secret.snowflake_account["snowflake-account-identifier"].value))[1]
-  user                     = lower(data.azurerm_key_vault_secret.snowflake_account["snowflake-account-username"].value)
+  organization_name        = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[0]
+  account_name             = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[1]
+  user                     = lower(local.config.snowflake.provisioner_username)
   authenticator            = "SNOWFLAKE_JWT"
-  private_key              = data.azurerm_key_vault_secret.snowflake_account["snowflake-account-private-key"].value
+  private_key              = data.azurerm_key_vault_secret.snowflake["snowflake-provisioner-private-key"].value
   role                     = "ACCOUNTADMIN"
   warehouse                = "COMPUTE_WH"
   preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled

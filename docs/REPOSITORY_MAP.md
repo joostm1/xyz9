@@ -9,9 +9,9 @@
 
 ## Apply-order groups
 
-- `aa-catalog`: organization catalog, schema contracts, shared Terraform modules
-- `ab-hub-spoke`: hub-spoke roots (`aa-foundation`, `ba-hubs`, `bb-sp1-connectivity`, `ca-spokes`)
-- `az-hub-projects/datafactory`: hub-connected workload roots (`ab-sfbootstrap`, `ac-sflz`, `ad-devops`, `ae-azure`)
+- `catalog`: organization catalog, schema contracts, shared Terraform modules
+- `azhubs`: hub-spoke roots (`aa-foundation`, `ba-hubs`, `bb-sp1-connectivity`, `ca-spokes`)
+- `spoke-projects/datafactory`: hub-connected workload roots (`ab-sfbootstrap`, `ac-sflz`, `ad-devops`, `ae-azure`)
 
 ## Private companion repositories
 

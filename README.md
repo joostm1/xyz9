@@ -1,8 +1,8 @@
-# xyz9 hub-spoke stack
+# xyz9
 
-Public infrastructure-as-code repository for the xyz9 hub-spoke platform.
+Public infrastructure-as-code repository for xyz9's hub-spoke project.
 
-This repository is for people who need to understand, maintain, or extend the shared platform layout:
+xyz9 is an imaginary company's IT department, providing shared identity, networking, landing-zone, application, and data infrastructure. This repository contains the shared catalog, hub-and-spoke connectivity, and connected workload examples for people who need to understand, maintain, or extend that infrastructure:
 
 - platform and network engineers working on hub-spoke connectivity
 - project teams that need hub-connected workload examples
@@ -18,11 +18,11 @@ The structure follows one rule:
 
 ## Apply-order groups
 
-- `aa-catalog/`
+- `catalog/`
   - shared catalog data, schema contracts, and reusable Terraform modules
-- `ab-hub-spoke/`
+- `azhubs/`
   - hub-spoke connectivity roots (`aa-foundation`, `ba-hubs`, `bb-sp1-connectivity`, `ca-spokes`)
-- `az-hub-projects/`
+- `spoke-projects/`
   - projects connected to the hub
   - current example: `datafactory` with roots in apply order
 
@@ -32,7 +32,7 @@ Private repositories in Azure DevOps (`xyz9ops`):
 - `projects` (private)
 - `offices` (private)
 
-Only connectivity to `sp1` stays here, under `ab-hub-spoke/bb-sp1-connectivity`.
+Only connectivity to `sp1` stays here, under `azhubs/bb-sp1-connectivity`.
 
 ## How to operate
 
@@ -52,9 +52,9 @@ Repository commands:
 
 Group commands (examples):
 
-- `make -C ab-hub-spoke list`
-- `make -C ab-hub-spoke plan`
-- `make -C az-hub-projects/datafactory plan`
+- `make -C azhubs list`
+- `make -C azhubs plan`
+- `make -C spoke-projects/datafactory plan`
 
 ## Documentation
 

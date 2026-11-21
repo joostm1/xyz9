@@ -23,9 +23,9 @@ variable "resource_group_name" {
   type = string
 }
 locals {
-  org_folder = "../../aa-catalog"
+  org_folder = "../../catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
-  project    = jsondecode(file("${local.org_folder}/projects/${var.project_name}.json"))
+  project    = jsondecode(file("${local.org_folder}/azhubs.json"))
   config     = data.terraform_remote_state.ba_hubs.outputs.config
   # lift aa-config contributions (project.vault)
   project_view = merge(local.config, try(local.config.roots["aa-config"], {}))

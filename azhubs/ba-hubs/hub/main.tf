@@ -11,7 +11,7 @@ resource "azurerm_resource_group" "rghub" {
 }
 # functional role assignments on the rg
 module "rg_role_assignments" {
-  source           = "../../../aa-catalog/terraform/modules/az/role_assignments"
+  source           = "../../../catalog/terraform/modules/az/role_assignments"
   entra_groups     = var.config.project.groups
   assignment_scope = azurerm_resource_group.rghub.id
   role_assignments = {
@@ -77,7 +77,7 @@ resource "azurerm_subnet" "sn1" {
   private_link_service_network_policies_enabled = false
 }
 module "nsg_subnet_sn1" {
-  source      = "../../../aa-catalog/terraform/modules/az/nsg"
+  source      = "../../../catalog/terraform/modules/az/nsg"
   name        = "nsg"
   rg_name     = azurerm_resource_group.rghub.name
   rg_location = azurerm_resource_group.rghub.location
@@ -305,7 +305,7 @@ module "ipsec_mesh" {
   ca_pem   = var.config.project_ca.pem
 }
 module "ipsec_files" {
-  source      = "../../../aa-catalog/terraform/modules/remote_files"
+  source      = "../../../catalog/terraform/modules/remote_files"
   name        = "ipsec-${var.hub.name}"
   remote_root = module.ipsec_mesh.remote_root
   sudo        = true
@@ -344,7 +344,7 @@ locals {
   EOT
 }
 module "bind_files" {
-  source      = "../../../aa-catalog/terraform/modules/remote_files"
+  source      = "../../../catalog/terraform/modules/remote_files"
   name        = "bind-${var.hub.name}"
   remote_root = "/etc"
   sudo        = true

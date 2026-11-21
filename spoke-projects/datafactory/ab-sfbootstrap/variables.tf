@@ -20,8 +20,8 @@ variable "resource_group_name" {
   type = string
 }
 locals {
-  org     = jsondecode(file("../../../aa-catalog/org.json"))
-  project = jsondecode(file("../../../aa-catalog/projects/${var.project_name}.json"))
+  org     = jsondecode(file("../../../catalog/org.json"))
+  project = jsondecode(file("../../../catalog/spoke-projects/${var.project_name}.json"))
   # living object from corp KV; overlay seed without wiping roots/projects
   config = merge(
     nonsensitive(jsondecode(data.azurerm_key_vault_secret.project_config.value)),

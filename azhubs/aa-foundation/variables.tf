@@ -23,11 +23,11 @@ variable "resource_group_name" {
   type = string
 }
 locals {
-  org_folder = "../../aa-catalog"
+  org_folder = "../../catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
   # strip $schema so it does not leak into remote state via merge → output.config
   project = {
-    for k, v in jsondecode(file("${local.org_folder}/projects/${var.project_name}.json")) : k => v if k != "$schema"
+    for k, v in jsondecode(file("${local.org_folder}/azhubs.json")) : k => v if k != "$schema"
   }
   config = merge(local.project, nonsensitive(jsondecode(data.azurerm_key_vault_secret.config_init.value)))
   pem = {

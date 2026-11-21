@@ -35,7 +35,7 @@ locals {
 }
 # inner join own_claims to dataset repos on dataset_key:kind; repo.id stays out so for_each keys stay known
 module "git_acl_own" {
-  source = "../../../aa-catalog/terraform/modules/map_join"
+  source = "../../../catalog/terraform/modules/map_join"
   left   = local.own_claims
   right = {
     for name, repo in local.git_repos : name => {

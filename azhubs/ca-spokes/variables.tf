@@ -23,7 +23,7 @@ variable "resource_group_name" {
   type = string
 }
 locals {
-  org_folder = "../../aa-catalog"
+  org_folder = "../../catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
   config     = data.terraform_remote_state.ba_hubs.outputs.config
   # lift aa-config contributions for spoke paths (project.rg, project.azure)
@@ -32,8 +32,8 @@ locals {
   hub_locations = try(local.config.roots["ba-hubs"].locations, {})
   # spoke candidates: hub_location alone filters
   catalog = {
-    for f in fileset("${local.org_folder}/projects", "*.json") :
-    trimsuffix(f, ".json") => jsondecode(file("${local.org_folder}/projects/${f}"))
+    for f in fileset("${local.org_folder}/spoke-projects", "*.json") :
+    trimsuffix(f, ".json") => jsondecode(file("${local.org_folder}/spoke-projects/${f}"))
   }
   spoke_projects = {
     for name, project in local.catalog : name => project if contains(keys(project), "hub_location")

@@ -42,12 +42,13 @@ resource "azurerm_role_assignment" "project_vault_owners" {
   principal_id         = each.value
 }
 module "project_vault_rbac" {
-  source               = "../../../aa-catalog/terraform/modules/az/wait_for_rbac"
+  source               = "../../../catalog/terraform/modules/az/wait_for_rbac"
   for_each             = local.project_vault_owner_principals
   scope                = azurerm_key_vault.project.id
   role_definition_name = "Key Vault Administrator"
   object_id            = each.value
-  assignment_id        = azurerm_role_assignment.project_vault_owners[each.key].id
+  assignment_id        = each.key
+  depends_on           = [azurerm_role_assignment.project_vault_owners]
 }
 resource "azurerm_key_vault_secret" "snowflake_provisioner" {
   for_each = {
