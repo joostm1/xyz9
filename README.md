@@ -1,8 +1,16 @@
 # xyz9 hub-spoke stack
 
-Public infrastructure-as-code repository for a hub-spoke platform, organized for first-time DevOps operators.
+Public infrastructure-as-code repository for the xyz9 hub-spoke platform.
 
-The structure follows one simple rule:
+This repository is for people who need to understand, maintain, or extend the shared platform layout:
+
+- platform and network engineers working on hub-spoke connectivity
+- project teams that need hub-connected workload examples
+- contributors who maintain shared catalog contracts and Terraform modules
+
+## What is here
+
+The structure follows one rule:
 
 - data structure first: top-level folders are apply-order groups
 - each group contains root modules in apply order
@@ -26,7 +34,7 @@ Private repositories in Azure DevOps (`xyz9ops`):
 
 Only connectivity to `sp1` stays here, under `ab-hub-spoke/bb-sp1-connectivity`.
 
-## Quick start
+## How to operate
 
 Prerequisites:
 
