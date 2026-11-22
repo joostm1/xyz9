@@ -18,13 +18,6 @@ data "terraform_remote_state" "ba_hubs" {
     subscription_id      = var.subscription_id
   }
 }
-# get the config objects for each spoke (project boundary)
-data "azurerm_key_vault_secret" "spoke_configs" {
-  for_each     = local.spoke_projects
-  name         = "${each.key}-config"
-  key_vault_id = var.corp_vault_id
-  provider     = azurerm.corp
-}
 # for_each hub and matching spokes
 module "spoke" {
   for_each = {
@@ -50,34 +43,4 @@ module "spoke" {
     config = local.hub_locations[each.value.hub_location]
   }
   project = local.project_view
-}
-# Read the existing ${name}-config secret before merging projects.datacenter.
-import {
-  for_each = local.spoke_projects
-  to       = azurerm_key_vault_secret.spoke_configs[each.key]
-  id       = data.azurerm_key_vault_secret.spoke_configs[each.key].id
-}
-# project boundary: nest under projects.<projectName>
-resource "azurerm_key_vault_secret" "spoke_configs" {
-  for_each     = local.spoke_projects
-  name         = "${each.key}-config"
-  key_vault_id = var.corp_vault_id
-  content_type = "application/json"
-  value = jsonencode(merge(
-    local.spoke_config[each.key],
-    {
-      projects = merge(try(local.spoke_config[each.key].projects, {}), {
-        (var.project_name) = module.spoke["${each.value.hub_location}-${each.key}"].config
-      })
-    }
-  ))
-  provider = azurerm.corp
-}
-# Grant secrets user to the owner group
-resource "azurerm_role_assignment" "spoke_owner_secrets_user" {
-  for_each             = local.spoke_projects
-  scope                = var.corp_vault_id
-  role_definition_name = "Key Vault Secrets User"
-  principal_id         = local.spoke_config[each.key].projects.projects.identity.owner.group_object_id
-  provider             = azurerm.corp
 }

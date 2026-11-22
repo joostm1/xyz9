@@ -97,13 +97,6 @@ module "kv_role_assignments" {
       engineer = {
         "Key Vault Administrator" = true
       }
-      regions = {
-        apc = {
-          manager = {
-            "Key Vault Administrator" = true
-          }
-        }
-      }
     }
   }
 }

@@ -2,19 +2,9 @@
 
 Public infrastructure-as-code repository for xyz9's hub-spoke project.
 
-xyz9 is an imaginary company's IT department, providing shared identity, networking, landing-zone, application, and data infrastructure. This repository contains the shared catalog, hub-and-spoke connectivity, and connected workload examples for people who need to understand, maintain, or extend that infrastructure:
+xyz9 is an imaginary company's IT department, providing shared identity, networking, landing-zone, application, and data infrastructure.
 
-- platform and network engineers working on hub-spoke connectivity
-- project teams that need hub-connected workload examples
-- contributors who maintain shared catalog contracts and Terraform modules
-
-## What is here
-
-The structure follows one rule:
-
-- data structure first: top-level folders are apply-order groups
-- each group contains root modules in apply order
-- each root module is self-contained and readable
+The repository brings those pieces together as a connected enterprise environment: Azure hubs provide shared network services, office sites join the hubs through an IPsec mesh, and project spokes land in the hub that serves them. The design supports extending the mesh across multiple hub locations and offices, while the current example configuration connects the `apc1` hub with the `sp1` office and a data-platform spoke. Alongside connectivity, the catalog and Terraform roots provision the shared identity, DNS, access, and workload foundations that make those environments usable.
 
 ## Apply-order groups
 
@@ -26,7 +16,7 @@ The structure follows one rule:
   - projects connected to the hub
   - current example: `datafactory` with roots in apply order
 
-The ``azhubs/bb-sp1-connectivity`` root manages connectivity to `sp1`.
+The `azhubs/bb-sp1-connectivity` root manages connectivity to `sp1`.
 
 ## How to operate
 
