@@ -46,6 +46,11 @@ resource "azurerm_role_assignment" "project_vault_owners" {
   role_definition_name = "Key Vault Administrator"
   principal_id         = each.value
 }
+resource "azurerm_role_assignment" "project_vault_secrets_user_runtime" {
+  scope                = azurerm_key_vault.project.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = local.foundation_projects.identity.owner.app_object_id
+}
 module "project_vault_rbac" {
   source               = "../../../catalog/terraform/modules/az/wait_for_rbac"
   for_each             = local.project_vault_owner_principals

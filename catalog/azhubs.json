@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/projects.schema.json",
-  "name": "datacenter",
+  "name": "azhubs",
   "description": "My little az datacenter",
   "roots": {},
   "projects": {},
