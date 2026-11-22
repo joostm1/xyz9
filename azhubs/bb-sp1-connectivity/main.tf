@@ -1,4 +1,4 @@
-# bb-offices: install generated IPsec mesh files onto office EdgeRouters
+# Install generated IPsec mesh files on office EdgeRouters.
 data "azurerm_key_vault_secret" "owner_p12" {
   name         = local.config.projects.projects.secret_names.secrets.owner_p12
   key_vault_id = var.corp_vault_id

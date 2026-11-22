@@ -51,7 +51,7 @@ module "spoke" {
   }
   project = local.project_view
 }
-# projects creates ${name}-config; adopt the current version, then merge projects.datacenter
+# Read the existing ${name}-config secret before merging projects.datacenter.
 import {
   for_each = local.spoke_projects
   to       = azurerm_key_vault_secret.spoke_configs[each.key]

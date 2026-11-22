@@ -26,12 +26,7 @@ The structure follows one rule:
   - projects connected to the hub
   - current example: `datafactory` with roots in apply order
 
-Private repositories in Azure DevOps (`xyz9ops`):
-
-- `projects` (private)
-- `offices` (private)
-
-Only connectivity to `sp1` stays here, under `azhubs/bb-sp1-connectivity`.
+The ``azhubs/bb-sp1-connectivity`` root manages connectivity to `sp1`.
 
 ## How to operate
 

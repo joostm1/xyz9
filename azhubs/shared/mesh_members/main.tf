@@ -9,7 +9,7 @@ variable "locations" {
 variable "offices" {
   type        = any
   default     = {}
-  description = "offices project sites keyed by office code"
+  description = "Office sites keyed by office code"
 }
 locals {
   hubs = {

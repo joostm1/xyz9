@@ -13,11 +13,6 @@
 - `azhubs`: hub-spoke roots (`aa-foundation`, `ba-hubs`, `bb-sp1-connectivity`, `ca-spokes`)
 - `spoke-projects/datafactory`: hub-connected workload roots (`ab-sfbootstrap`, `ac-sflz`, `ad-devops`, `ae-azure`)
 
-## Private companion repositories
-
-- `projects` (private, Azure DevOps `xyz9ops`)
-- `offices` (private, Azure DevOps `xyz9ops`)
-
 ## Documentation
 
 - `docs/ARCHITECTURE.md`: system design and configuration flow

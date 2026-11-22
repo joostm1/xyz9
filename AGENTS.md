@@ -18,7 +18,7 @@ XYZ9 is a learning environment for enterprise IT: identity, networking, landing 
 
 `catalog/` is the shared organization catalog and Terraform toolkit. It contains project seeds under `projects/`, schemas under `schemas/`, and orchestration and reusable modules under `terraform/`. Project folders use a local `org/` path to consume the catalog.
 
-The public repository contains the shared catalog, hub-and-spoke infrastructure under `azhubs/`, and connected workloads under `spoke-projects/`. Private companion repositories in Azure DevOps (`xyz9ops`) include `projects` and `offices`.
+The public repository contains the shared catalog, hub-and-spoke infrastructure under `azhubs/`, and connected workloads under `spoke-projects/`.
 
 The external `iac` foundation provides:
 
@@ -31,7 +31,7 @@ The external `iac` foundation provides:
 
 Pass the foundation coordinates through `~/.tfbackend.hcl` and `~/.tfvars`. Never put credentials or secret values in git.
 
-The intended high-level order is: create project identities and access grants, build central hub-and-spoke connectivity, then apply connected workloads. Workloads with `hub_location` depend on `azhubs/ca-spokes`; private companion repositories may apply additional workloads to spoke-connected hosts. Roots that manage office hosts require network access to `egx` and OPI at `sp1`. Terraform imports require the named live resource to exist.
+The intended high-level order is: create project identities and access grants, build central hub-and-spoke connectivity, then apply connected workloads. Workloads with `hub_location` depend on `azhubs/ca-spokes`. Roots that manage office hosts require network access to `egx` and OPI at `sp1`. Terraform imports require the named live resource to exist.
 
 ## Terraform roots and configuration
 

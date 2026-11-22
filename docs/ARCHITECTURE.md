@@ -46,11 +46,6 @@ Contribution ownership remains namespaced:
 - each group `Makefile` runs its own roots in apply order
 - destroy runs in reverse order
 
-## Private boundaries
+## Office connectivity
 
-The following repositories are private in Azure DevOps (`xyz9ops`):
-
-- `projects`
-- `offices`
-
-Only connectivity to `sp1` remains in the public hub-spoke group.
+The `azhubs/bb-sp1-connectivity` root manages connectivity to `sp1`.

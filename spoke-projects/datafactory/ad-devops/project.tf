@@ -1,4 +1,4 @@
-# ADO project bootstrapped by `projects`; this root owns it after import
+# Import the existing Azure DevOps project before managing it from this root.
 resource "azuredevops_project" "this" {
   name               = local.project.devops.project.name
   description        = local.project.description
