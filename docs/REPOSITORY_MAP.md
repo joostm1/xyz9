@@ -16,7 +16,6 @@
 ## Private companion repositories
 
 - `projects` (private, Azure DevOps `xyz9ops`)
-- `homeapps` (private, Azure DevOps `xyz9ops`)
 - `offices` (private, Azure DevOps `xyz9ops`)
 
 ## Documentation

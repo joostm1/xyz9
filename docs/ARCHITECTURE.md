@@ -50,7 +50,6 @@ Contribution ownership remains namespaced:
 
 The following repositories are private in Azure DevOps (`xyz9ops`):
 
-- `homeapps`
 - `projects`
 - `offices`
 

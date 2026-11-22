@@ -28,7 +28,6 @@ The structure follows one rule:
 
 Private repositories in Azure DevOps (`xyz9ops`):
 
-- `homeapps` (private)
 - `projects` (private)
 - `offices` (private)
 

@@ -7,7 +7,6 @@
   "owner": "joost@xyz9.net",
   "owner_group": "datacenter-owners",
   "devops": {
-    "owner": "homeapps",
     "project": {
       "name": "xyz9it"
     }

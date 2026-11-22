@@ -18,7 +18,7 @@ XYZ9 is a learning environment for enterprise IT: identity, networking, landing 
 
 `catalog/` is the shared organization catalog and Terraform toolkit. It contains project seeds under `projects/`, schemas under `schemas/`, and orchestration and reusable modules under `terraform/`. Project folders use a local `org/` path to consume the catalog.
 
-The public repository contains the shared catalog, hub-and-spoke infrastructure under `azhubs/`, and connected workloads under `spoke-projects/`. Private companion repositories in Azure DevOps (`xyz9ops`) include `homeapps`, `projects`, and `offices`. `homeapps` application catalog data and static files remain under `catalog/projects/homeapps/`.
+The public repository contains the shared catalog, hub-and-spoke infrastructure under `azhubs/`, and connected workloads under `spoke-projects/`. Private companion repositories in Azure DevOps (`xyz9ops`) include `projects` and `offices`.
 
 The external `iac` foundation provides:
 
