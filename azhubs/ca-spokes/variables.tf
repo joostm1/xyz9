@@ -38,8 +38,4 @@ locals {
   spoke_projects = {
     for name, project in local.catalog : name => project if contains(keys(project), "hub_location")
   }
-  spoke_config = {
-    for name in keys(local.spoke_projects) :
-    name => nonsensitive(jsondecode(data.azurerm_key_vault_secret.spoke_configs[name].value))
-  }
 }

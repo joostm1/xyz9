@@ -31,7 +31,7 @@ planz := $(project)-$(state_key).tfplan.zip
 tfopts := \
 	-input=false \
 	-refresh=true \
-	-parallelism=32
+	-parallelism=128
 tfvar_file := $(HOME)/.tfvars
 tfbackend_file := $(HOME)/.tfbackend.hcl
 tfvars := \
@@ -88,7 +88,7 @@ clean:
 	rm -rf .terraform $(planz) .terraform.lock.hcl
 
 import:
-	terraform import $(tfvars) $(to) $(id)
+	terraform import $(tfvars) '$(to)' '$(id)'
 
 init:
 	terraform init $(tfinitops) || (rm -rf .terraform && exit 1)

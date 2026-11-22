@@ -6,7 +6,7 @@ resource "azurerm_resource_group" "spoke_infra_rg" {
 resource "azurerm_role_assignment" "spoke_rg_reader" {
   scope                = azurerm_resource_group.spoke_infra_rg.id
   role_definition_name = "Reader"
-  principal_id         = var.spoke.project.projects.projects.identity.owner.group_object_id
+  principal_id         = var.spoke.owner_group_object_id
 }
 resource "azurerm_resource_group" "spoke_rg" {
   name     = "rg-${var.spoke.name}"
@@ -15,7 +15,7 @@ resource "azurerm_resource_group" "spoke_rg" {
 resource "azurerm_role_assignment" "spoke_rg_owner" {
   scope                = azurerm_resource_group.spoke_rg.id
   role_definition_name = "Owner"
-  principal_id         = var.spoke.project.projects.projects.identity.owner.group_object_id
+  principal_id         = var.spoke.owner_group_object_id
 }
 resource "azurerm_route_table" "spoke_rt" {
   name                = "rt-${var.spoke.name}-zone"

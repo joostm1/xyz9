@@ -6,8 +6,9 @@ variable "hub" {
 }
 variable "spoke" {
   type = object({
-    name    = string
-    project = any
+    name                  = string
+    project               = any
+    owner_group_object_id = string
   })
 }
 variable "project" {

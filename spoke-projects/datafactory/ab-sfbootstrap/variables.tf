@@ -22,13 +22,15 @@ variable "resource_group_name" {
 locals {
   org     = jsondecode(file("../../../catalog/org.json"))
   project = jsondecode(file("../../../catalog/spoke-projects/${var.project_name}.json"))
+  datacenter_config = nonsensitive(jsondecode(data.azurerm_key_vault_secret.datacenter_config.value))
+  foundation_projects = local.datacenter_config.projects.projects
   # living object from corp KV; overlay seed without wiping roots/projects
   config = merge(
     nonsensitive(jsondecode(data.azurerm_key_vault_secret.project_config.value)),
     { for k, v in local.project : k => v if !contains(["roots", "projects"], k) }
   )
   project_vault_owner_principals = {
-    app   = local.config.projects.projects.identity.owner.app_object_id
-    group = local.config.projects.projects.identity.owner.group_object_id
+    app   = local.foundation_projects.identity.owner.app_object_id
+    group = local.foundation_projects.identity.owner.group_object_id
   }
 }

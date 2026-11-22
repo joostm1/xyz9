@@ -4,8 +4,13 @@ data "azurerm_key_vault_secret" "project_config" {
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
+data "azurerm_key_vault_secret" "datacenter_config" {
+  name         = "datacenter-config"
+  key_vault_id = var.corp_vault_id
+  provider     = azurerm.corp
+}
 data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.config.projects.projects.secret_names.secrets.owner_p12
+  name         = local.foundation_projects.secret_names.secrets.owner_p12
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
@@ -28,7 +33,7 @@ resource "azurerm_key_vault" "project" {
   name                          = "kv-${local.org.name}-${local.project.name}"
   location                      = local.config.projects.datacenter.spoke.rg.location
   resource_group_name           = local.config.projects.datacenter.spoke.rg.name
-  tenant_id                     = local.config.projects.projects.entra.tenant_id
+  tenant_id                     = local.foundation_projects.entra.tenant_id
   sku_name                      = "standard"
   rbac_authorization_enabled    = true
   public_network_access_enabled = true
