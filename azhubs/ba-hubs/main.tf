@@ -16,13 +16,13 @@ data "azurerm_key_vault_certificate_data" "datacenter_cacert" {
   provider     = azurerm.corp
 }
 # our predecessor
-data "terraform_remote_state" "aa_config" {
+data "terraform_remote_state" "aa_foundation" {
   backend = "azurerm"
   config = {
     resource_group_name  = var.resource_group_name
     storage_account_name = var.storage_account_name
     container_name       = var.project_name
-    key                  = "aa-config.tfstate"
+    key                  = "aa-foundation.tfstate"
     use_azuread_auth     = true
     tenant_id            = var.tenant_id
     subscription_id      = var.subscription_id

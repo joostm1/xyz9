@@ -38,11 +38,9 @@ provider "azurerm" {
 provider "azurerm" {
   storage_use_azuread             = true
   tenant_id                       = var.tenant_id
-  subscription_id                 = local.config.projects.projects.azurerm.subscription.id
-  client_id                       = local.config.projects.projects.identity.owner.app_client_id
-  client_certificate              = data.azurerm_key_vault_secret.owner_p12.value
+  subscription_id                 = var.subscription_id
   resource_provider_registrations = "extended"
-  use_cli                         = false
+  use_cli                         = true
   features {
     key_vault {
       purge_soft_delete_on_destroy    = true
@@ -51,8 +49,6 @@ provider "azurerm" {
   }
 }
 provider "azuread" {
-  tenant_id          = var.tenant_id
-  client_id          = local.config.projects.projects.identity.owner.app_client_id
-  client_certificate = data.azurerm_key_vault_secret.owner_p12.value
-  use_cli            = false
+  tenant_id = var.tenant_id
+  use_cli   = true
 }

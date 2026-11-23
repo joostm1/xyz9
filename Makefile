@@ -1,4 +1,4 @@
-GROUPS := catalog azhubs spoke-projects
+GROUPS := azhubs spoke-projects
 
 .DEFAULT_GOAL := list
 

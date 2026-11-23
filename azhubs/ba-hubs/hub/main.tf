@@ -268,7 +268,7 @@ resource "azurerm_linux_virtual_machine" "nva" {
   name                            = "r${var.hub.name}"
   resource_group_name             = azurerm_resource_group.rghub.name
   location                        = azurerm_resource_group.rghub.location
-  size                            = "Standard_B2ats_v2"
+  size                            = "Standard_D2s_v3"
   admin_username                  = var.hub.name
   network_interface_ids           = [azurerm_network_interface.nvanic1.id]
   custom_data                     = data.cloudinit_config.nvapost.rendered

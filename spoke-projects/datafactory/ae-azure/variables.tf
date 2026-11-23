@@ -28,7 +28,7 @@ variable "cloudflare_api_token" {
 
 locals {
   org     = jsondecode(file("../../../catalog/org.json"))
-  project = jsondecode(file("../../../catalog/spoke-projects/${var.project_name}.json"))
+  project = jsondecode(file("../../../catalog/projects/${var.project_name}.json"))
   # our predecessor
   config   = data.terraform_remote_state.au_devops.outputs.config
   datasets = local.config.scopes.datasets

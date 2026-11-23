@@ -30,10 +30,10 @@ variable "cloudflare_api_token" {
 locals {
   org_folder = "../../catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
-  project    = jsondecode(file("${local.org_folder}/azhubs.json"))
-  config     = data.terraform_remote_state.aa_config.outputs.config
-  # lift aa-config contributions for hub paths (project.vault, project.rg, project.groups)
-  project_view = merge(local.config, try(local.config.roots["aa-config"], {}))
+  project    = jsondecode(file("${local.org_folder}/projects/${var.project_name}.json"))
+  config     = data.terraform_remote_state.aa_foundation.outputs.config
+  # lift aa-foundation contributions for hub paths (project.vault, project.rg, project.groups)
+  project_view = merge(local.config, try(local.config.roots["aa-foundation"], {}))
   # office sites are owned by the datacenter project seed
   offices = try(local.project.offices, {})
 }

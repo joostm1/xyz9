@@ -1,5 +1,6 @@
-ROOTS := aa-foundation ba-hubs bb-sp1-connectivity ca-spokes
-ROOTS_REVERSE := ca-spokes bb-sp1-connectivity ba-hubs aa-foundation
+# Child directories that contain a Makefile, in ls order. Destroy walks that list backwards.
+ROOTS := $(shell ls -d */Makefile | sed 's|/Makefile||')
+ROOTS_REVERSE := $(shell printf '%s\n' $(ROOTS) | tac)
 
 .DEFAULT_GOAL := list
 
