@@ -2,9 +2,9 @@ variable "dns_domain" {
   type        = string
   description = "Org DNS domain, e.g. xyz9.net"
 }
-variable "locations" {
+variable "hubs" {
   type        = any
-  description = "datacenter hub locations keyed by location code"
+  description = "datacenter hubs keyed by hub code"
 }
 variable "offices" {
   type        = any
@@ -13,7 +13,7 @@ variable "offices" {
 }
 locals {
   hubs = {
-    for name, loc in var.locations : name => {
+    for name, loc in var.hubs : name => {
       name       = name
       kind       = "hub"
       id         = "r${name}.${var.dns_domain}"

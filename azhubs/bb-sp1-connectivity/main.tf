@@ -31,7 +31,7 @@ data "terraform_remote_state" "ba_hubs" {
 module "mesh_members" {
   source     = "../shared/mesh_members"
   dns_domain = local.org.about.dns_domain
-  locations  = local.config.locations
+  hubs       = local.config.hubs
   offices    = local.offices
 }
 module "office" {

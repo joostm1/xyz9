@@ -29,7 +29,7 @@ locals {
   # lift aa-config contributions for spoke paths (project.rg, project.azure)
   project_view = merge(local.config, try(local.config.roots["aa-config"], {}))
   # deployed hubs from predecessor root
-  hub_locations = try(local.config.roots["ba-hubs"].locations, {})
+  hubs = try(local.config.roots["ba-hubs"].hubs, {})
   # spoke candidates: hub_location alone filters
   catalog = {
     for f in fileset("${local.org_folder}/spoke-projects", "*.json") :

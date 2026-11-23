@@ -48,12 +48,12 @@
     },
     "hub_location": {
       "type": "string",
-      "description": "Hub location code from `projects/datacenter.json`, locations key. Only set this for projects that land on a connected hub.",
+      "description": "Hub location code from `projects/datacenter.json`, hubs key. Only set this for projects that land on a connected hub.",
       "enum": ["apc1", "apc2", "eas1"]
     },
-    "locations": {
+    "hubs": {
       "type": "object",
-      "description": "datacenter hub locations. Only set on the datacenter project seed.",
+      "description": "datacenter hubs keyed by hub code. Only set on the datacenter project seed.",
       "additionalProperties": {
         "type": "object",
         "required": ["region", "address_space", "spokes_address_space"],

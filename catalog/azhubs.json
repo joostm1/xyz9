@@ -16,7 +16,7 @@
   },
   "azure": {
     "rg": {
-      "name": "rg-datacenter",
+      "name": "rg-azhubs",
       "location": "CentralIndia"
     },
     "private_dns_zones": [
@@ -38,7 +38,7 @@
       }
     }
   },
-  "locations": {
+  "hubs": {
     "apc1": {
       "region": "CentralIndia",
       "address_space": ["172.16.64.0/20", "fd17:16:0:10::/60"],

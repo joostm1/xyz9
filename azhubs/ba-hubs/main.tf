@@ -31,20 +31,20 @@ data "terraform_remote_state" "aa_config" {
 module "mesh_members" {
   source     = "../shared/mesh_members"
   dns_domain = local.org.about.dns_domain
-  locations  = local.config.locations
+  hubs       = local.config.hubs
   offices    = local.offices
 }
 # create a hub in each location
 module "datacenter_hub" {
   source   = "./hub"
-  for_each = toset(keys(local.config.locations))
+  for_each = toset(keys(local.config.hubs))
   dc_secrets = {
     for secret_name in local.project.credentials.secret_names :
     secret_name => data.azurerm_key_vault_secret.dc_secrets[secret_name].value
   }
   hub = {
     name   = each.key
-    config = local.config.locations[each.key]
+    config = local.config.hubs[each.key]
   }
   members = module.mesh_members.members
   config = {

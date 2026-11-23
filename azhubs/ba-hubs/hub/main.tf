@@ -1,6 +1,6 @@
 # hub/main.tf - create a hub in an azure region
 resource "azurerm_resource_group" "rghub" {
-  location = var.config.project.locations[var.hub.name].region
+  location = var.config.project.hubs[var.hub.name].region
   name     = "rg-${var.config.project.name}-${var.hub.name}"
   tags = {
     deployment_date = formatdate("YYYY-MM-DD", timestamp())

@@ -27,14 +27,14 @@ data "azuread_group" "spoke_owners" {
 module "spoke" {
   for_each = {
     for item in flatten([
-      for location in keys(local.hub_locations) : [
+      for hub in keys(local.hubs) : [
         for spoke_project in local.spoke_projects :
         {
-          key           = "${location}-${spoke_project.name}"
-          hub_location  = location
+          key           = "${hub}-${spoke_project.name}"
+          hub_location  = hub
           spoke_name    = spoke_project.name
           spoke_project = spoke_project
-        } if spoke_project.hub_location == location
+        } if spoke_project.hub_location == hub
       ]
     ]) : item.key => item
   }
@@ -46,7 +46,7 @@ module "spoke" {
   }
   hub = {
     name   = each.value.hub_location
-    config = local.hub_locations[each.value.hub_location]
+    config = local.hubs[each.value.hub_location]
   }
   project = local.project_view
 }

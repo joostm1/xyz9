@@ -32,11 +32,11 @@ locals {
   # office sites are owned by the datacenter project seed
   offices = try(local.project.offices, {})
   hub_dns_ipv4 = [
-    for loc in sort(keys(local.config.roots["ba-hubs"].locations)) :
-    local.config.roots["ba-hubs"].locations[loc].nva.addresses.private.ipv4
+    for loc in sort(keys(local.config.roots["ba-hubs"].hubs)) :
+    local.config.roots["ba-hubs"].hubs[loc].nva.addresses.private.ipv4
   ]
   hub_dns_ipv6 = [
-    for loc in sort(keys(local.config.roots["ba-hubs"].locations)) :
-    local.config.roots["ba-hubs"].locations[loc].nva.addresses.private.ipv6
+    for loc in sort(keys(local.config.roots["ba-hubs"].hubs)) :
+    local.config.roots["ba-hubs"].hubs[loc].nva.addresses.private.ipv6
   ]
 }
