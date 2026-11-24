@@ -14,3 +14,6 @@ variable "spoke" {
 variable "project" {
   type = any
 }
+variable "org" {
+  type = any
+}

@@ -1,11 +1,23 @@
 # ca-spoke: land projects with a `hub_location` on spoke connected to their desired hub
 
 data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.config.projects.projects.secret_names.secrets.owner_p12
+  name         = local.config.roots["aa-foundation"].owner.p12.name
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
 # our predecessor
+data "terraform_remote_state" "am_foundation" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = var.resource_group_name
+    storage_account_name = var.storage_account_name
+    container_name       = var.project_name
+    key                  = "am-foundation.tfstate"
+    use_azuread_auth     = true
+    tenant_id            = var.tenant_id
+    subscription_id      = split("/", var.corp_vault_id)[2]
+  }
+}
 data "terraform_remote_state" "ba_hubs" {
   backend = "azurerm"
   config = {
@@ -15,7 +27,7 @@ data "terraform_remote_state" "ba_hubs" {
     key                  = "ba-hubs.tfstate"
     use_azuread_auth     = true
     tenant_id            = var.tenant_id
-    subscription_id      = var.subscription_id
+    subscription_id      = split("/", var.corp_vault_id)[2]
   }
 }
 # Resolve owner groups from spoke project seeds.
@@ -49,12 +61,13 @@ module "spoke" {
     config = local.hubs[each.value.hub_location]
   }
   project = local.project_view
+  org     = local.org
 }
-# project boundary: nest under projects.<projectName>
+# Publish `<spoke>-config` in `kv-xyz9-azhubs` for the spoke roots
 resource "azurerm_key_vault_secret" "spoke_configs" {
   for_each     = local.spoke_projects
   name         = "${each.key}-config"
-  key_vault_id = var.corp_vault_id
+  key_vault_id = local.project_view.vault.id
   content_type = "application/json"
   value = jsonencode(merge(
     local.spoke_projects[each.key],
@@ -66,10 +79,10 @@ resource "azurerm_key_vault_secret" "spoke_configs" {
   ))
   provider = azurerm.corp
 }
-# Grant secrets user to the owner group
+# Grant the spoke owner group Key Vault Secrets User on `kv-xyz9-azhubs` so it can read the handoff
 resource "azurerm_role_assignment" "spoke_owner_secrets_user" {
   for_each             = local.spoke_projects
-  scope                = var.corp_vault_id
+  scope                = local.project_view.vault.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = data.azuread_group.spoke_owners[each.key].object_id
   provider             = azurerm.corp

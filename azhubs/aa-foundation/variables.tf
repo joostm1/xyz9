@@ -1,6 +1,3 @@
-variable "org_name" {
-  type = string
-}
 variable "state_key" {
   type = string
 }

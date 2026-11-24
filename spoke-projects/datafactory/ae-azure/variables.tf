@@ -1,7 +1,4 @@
 # module inputs; same-project config from ad-devops remote_state
-variable "org_name" {
-  type = string
-}
 variable "state_key" {
   type = string
 }
@@ -32,6 +29,8 @@ locals {
   # our predecessor
   config   = data.terraform_remote_state.au_devops.outputs.config
   datasets = local.config.scopes.datasets
+  # private DNS zones are in the same resource group as kv-xyz9-azhubs
+  private_dns_rg_id = regex("^/subscriptions/[^/]+/resourceGroups/[^/]+", local.config.projects.azhubs.vault.id)
   resource_names = {
     az = {
       shir_host_adf = "adf-${local.org.name}-${local.project.name}"

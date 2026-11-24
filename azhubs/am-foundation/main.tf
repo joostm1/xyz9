@@ -13,7 +13,7 @@ data "terraform_remote_state" "aa_foundation" {
 }
 # Read `azhubs-owner-p12` from the corporate vault for client_certificate on the default azurerm provider
 data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.aa_foundation.owner.p12.name
+  name         = local.config.roots["aa-foundation"].owner.p12.name
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
@@ -35,23 +35,20 @@ resource "azuread_group" "function_scope_role_groups" {
   assignable_to_role      = false
   prevent_duplicate_names = true
   owners = [
-    local.aa_foundation.owner.user.object_id,
-    local.aa_foundation.owner.service_principal.object_id,
+    local.config.roots["aa-foundation"].owner.user.object_id,
+    local.config.roots["aa-foundation"].owner.service_principal.object_id,
   ]
 }
-# Create `rg-azhubs` for the project
 resource "azurerm_resource_group" "project_rg" {
   location = local.project.azure.rg.location
   name     = local.project.azure.rg.name
 }
-# Grant `azhubs-owners` Owner on `rg-azhubs`
 resource "azurerm_role_assignment" "owner_group_rg" {
   scope                = azurerm_resource_group.project_rg.id
   role_definition_name = "Owner"
-  principal_id         = local.aa_foundation.owner.group.object_id
+  principal_id         = local.config.roots["aa-foundation"].owner.group.object_id
   principal_type       = "Group"
 }
-# role assignments on the resource group
 module "rg_role_assignments" {
   source           = "../../catalog/terraform/modules/az/role_assignments"
   entra_groups     = local.entra_scope_role_groups
@@ -79,7 +76,7 @@ resource "azurerm_key_vault" "project_kv" {
 resource "azurerm_role_assignment" "project_kv_data_roles" {
   for_each = {
     "owner" = {
-      principal            = local.aa_foundation.owner.group.object_id
+      principal            = local.config.roots["aa-foundation"].owner.group.object_id
       role_definition_name = "Key Vault Administrator"
     }
   }
@@ -88,7 +85,6 @@ resource "azurerm_role_assignment" "project_kv_data_roles" {
   principal_id         = each.value.principal
   principal_type       = "Group"
 }
-# functional role assignments on the vault
 module "kv_role_assignments" {
   source           = "../../catalog/terraform/modules/az/role_assignments"
   entra_groups     = local.entra_scope_role_groups

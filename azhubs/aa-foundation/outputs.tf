@@ -19,6 +19,9 @@ output "config" {
             name = azurerm_key_vault_secret.owner_p12.name
           }
         }
+        project_ca = {
+          name = azurerm_key_vault_certificate.project_ca.name
+        }
       }
     })
   })

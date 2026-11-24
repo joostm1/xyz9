@@ -17,5 +17,30 @@ output "config" {
       }
     }
     hub = var.hub.config
+    subscription = {
+      id   = data.azurerm_subscription.current.subscription_id
+      name = data.azurerm_subscription.current.display_name
+    }
+    vault = {
+      id   = var.project.vault.id
+      name = var.project.vault.name
+    }
+    owner_group = {
+      object_id = var.spoke.owner_group_object_id
+    }
+    owner_user = {
+      object_id = data.azuread_user.owner.object_id
+    }
+    client = {
+      application = {
+        client_id = azuread_application.client.client_id
+      }
+      service_principal = {
+        object_id = azuread_service_principal.client.object_id
+      }
+      p12 = {
+        name = azurerm_key_vault_secret.client_p12.name
+      }
+    }
   }
 }

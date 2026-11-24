@@ -1,5 +1,5 @@
 # private connectivity into Snowflake: internal stage + Snowflake service PE and DNS
-# ENABLE_INTERNAL_STAGES_PRIVATELINK is set in am-sfbootstrap
+# ENABLE_INTERNAL_STAGES_PRIVATELINK is set in ab-sfbootstrap
 data "snowflake_system_get_privatelink_config" "snowflake_private_link" {
   provider = snowflake.accountadmin
 }
@@ -17,11 +17,12 @@ resource "snowflake_execute" "disable_internal_stage_public_access" {
 module "pe_internal_stage_blob" {
   source                      = "../../../catalog/terraform/modules/az/private_endpoint"
   private_connection_resource = data.snowflake_system_get_privatelink_config.snowflake_private_link.internal_stage
-  location                    = local.config.projects.datacenter.spoke.rg.location
+  location                    = local.config.projects.azhubs.spoke.rg.location
   name                        = local.resource_names.az.int_stage_pe_blob
-  resource_group_name         = local.config.projects.datacenter.spoke.rg.name
+  resource_group_name         = local.config.projects.azhubs.spoke.rg.name
   sub_resources               = ["blob"]
-  subnet_id                   = local.config.projects.datacenter.spoke.vnet.vn1.subnets.sn1.id
+  subnet_id                   = local.config.projects.azhubs.spoke.vnet.vn1.subnets.sn1.id
+  dnszoneresourcegroup_id     = local.private_dns_rg_id
   is_manual_connection        = true
 }
 resource "snowflake_execute" "sflz_internal_stage_approve_private_link" {
@@ -32,9 +33,9 @@ resource "snowflake_execute" "sflz_internal_stage_approve_private_link" {
 # --- Snowflake service PE in our VNet (approve at snowflake's end) ---
 resource "azurerm_private_endpoint" "pe_sflz_pvlinksvc" {
   name                          = local.resource_names.az.sf_pvlinksvc_pe
-  location                      = local.config.projects.datacenter.spoke.rg.location
-  resource_group_name           = local.config.projects.datacenter.spoke.rg.name
-  subnet_id                     = local.config.projects.datacenter.spoke.vnet.vn1.subnets.sn1.id
+  location                      = local.config.projects.azhubs.spoke.rg.location
+  resource_group_name           = local.config.projects.azhubs.spoke.rg.name
+  subnet_id                     = local.config.projects.azhubs.spoke.vnet.vn1.subnets.sn1.id
   custom_network_interface_name = "${local.resource_names.az.sf_pvlinksvc_pe}-nic"
   private_service_connection {
     name                              = "${local.resource_names.az.sf_pvlinksvc_pe}-psc"
@@ -44,14 +45,14 @@ resource "azurerm_private_endpoint" "pe_sflz_pvlinksvc" {
   }
   private_dns_zone_group {
     name                 = "${local.resource_names.az.sf_pvlinksvc_pe}-pdnszg"
-    private_dns_zone_ids = ["/subscriptions/98000b13-b691-416e-ad86-ef05d9227b9e/resourceGroups/rg-datacenter/providers/Microsoft.Network/privateDnsZones/privatelink.snowflakecomputing.com"]
+    private_dns_zone_ids = ["${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/privatelink.snowflakecomputing.com"]
   }
 }
 # get an access token for the snowflake private link approval call
 module "sflz_azure_access_token" {
   source     = "../../../catalog/terraform/modules/entra/acquire_token_for_client"
   tenant_id  = var.tenant_id
-  client_id  = local.config.projects.projects.identity.owner.app_client_id
+  client_id  = local.config.projects.azhubs.client.application.client_id
   p12_bundle = data.azurerm_key_vault_secret.owner_p12.value
   scopes     = ["https://management.azure.com/.default"]
 }
@@ -67,7 +68,7 @@ resource "snowflake_execute" "pe_sflz_snowflake_service_approve_private_link" {
 # dns A record for the account url, i.e.,  nq83813.west-europe.privatelink.snowflakecomputing.com IN A <private-ip>
 resource "azurerm_private_dns_a_record" "pe_sflz_snowflake_service_dns_a_record" {
   name                = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.account_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
-  private_dns_zone_id = "/subscriptions/98000b13-b691-416e-ad86-ef05d9227b9e/resourceGroups/rg-datacenter/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
   ttl                 = 300
   records             = [azurerm_private_endpoint.pe_sflz_pvlinksvc.private_service_connection[0].private_ip_address]
 }
@@ -82,7 +83,7 @@ resource "azurerm_private_dns_cname_record" "privatelink_snowflake_svc" {
     spcs_registry_url        = "${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.registry"
     openflow_url             = "${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.openflow.${local.resource_names.snowflake.location_id.west-europe}"
   }
-  private_dns_zone_id = "/subscriptions/98000b13-b691-416e-ad86-ef05d9227b9e/resourceGroups/rg-datacenter/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
   name                = each.value
   ttl                 = 300
   record              = azurerm_private_dns_a_record.pe_sflz_snowflake_service_dns_a_record.fqdn
@@ -93,7 +94,7 @@ resource "azurerm_private_dns_cname_record" "privatelink_snowflake_app" {
     app_service = "*.amszqu" # app-service-privatelink-url
   }
   name                = each.value
-  private_dns_zone_id = "/subscriptions/98000b13-b691-416e-ad86-ef05d9227b9e/resourceGroups/rg-datacenter/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.app}"
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.app}"
   ttl                 = 300
   record              = azurerm_private_dns_a_record.pe_sflz_snowflake_service_dns_a_record.fqdn
 }

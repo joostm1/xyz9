@@ -23,8 +23,7 @@ locals {
   project = {
     for k, v in jsondecode(file("${local.org_folder}/projects/${var.project_name}.json")) : k => v if k != "$schema"
   }
-  config        = data.terraform_remote_state.aa_foundation.outputs.config
-  aa_foundation = local.config.roots["aa-foundation"]
+  config = data.terraform_remote_state.aa_foundation.outputs.config
   scope_role_groups = {
     for group_key, group in module.scope_roles.by_key : group_key => {
       key          = group.key

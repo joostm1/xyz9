@@ -12,28 +12,28 @@ resource "random_password" "shir_admin" {
 resource "azurerm_key_vault_secret" "shir_admin_username" {
   name         = "shirAdminUsername"
   value        = "shirAdmin"
-  key_vault_id = local.config.roots["am-sfbootstrap"].project_vault_id
+  key_vault_id = local.config.roots["ab-sfbootstrap"].project_vault_id
 }
 resource "azurerm_key_vault_secret" "shir_admin_password" {
   name         = "shirAdminPassword"
   value        = random_password.shir_admin.result
-  key_vault_id = local.config.roots["am-sfbootstrap"].project_vault_id
+  key_vault_id = local.config.roots["ab-sfbootstrap"].project_vault_id
 }
 resource "azurerm_network_interface" "shir" {
   name                           = local.resource_names.az.shir_nic
-  location                       = local.config.projects.datacenter.spoke.rg.location
-  resource_group_name            = local.config.projects.datacenter.spoke.rg.name
+  location                       = local.config.projects.azhubs.spoke.rg.location
+  resource_group_name            = local.config.projects.azhubs.spoke.rg.name
   accelerated_networking_enabled = true
   ip_configuration {
     name                          = "ipconfig4"
-    subnet_id                     = local.config.projects.datacenter.spoke.vnet.vn1.subnets.sn1.id
+    subnet_id                     = local.config.projects.azhubs.spoke.vnet.vn1.subnets.sn1.id
     private_ip_address_allocation = "Dynamic"
     private_ip_address_version    = "IPv4"
     primary                       = true
   }
   ip_configuration {
     name                          = "ipconfigv6"
-    subnet_id                     = local.config.projects.datacenter.spoke.vnet.vn1.subnets.sn1.id
+    subnet_id                     = local.config.projects.azhubs.spoke.vnet.vn1.subnets.sn1.id
     private_ip_address_allocation = "Dynamic"
     private_ip_address_version    = "IPv6"
     primary                       = false
@@ -52,8 +52,8 @@ resource "terraform_data" "shir_install_script_hash" {
 }
 resource "azurerm_windows_virtual_machine" "shir" {
   name                       = local.resource_names.az.shir_vm
-  resource_group_name        = local.config.projects.datacenter.spoke.rg.name
-  location                   = local.config.projects.datacenter.spoke.rg.location
+  resource_group_name        = local.config.projects.azhubs.spoke.rg.name
+  location                   = local.config.projects.azhubs.spoke.rg.location
   size                       = "Standard_B2als_v2"
   admin_username             = azurerm_key_vault_secret.shir_admin_username.value
   admin_password             = azurerm_key_vault_secret.shir_admin_password.value

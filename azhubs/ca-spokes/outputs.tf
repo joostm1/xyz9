@@ -6,7 +6,7 @@ output "config" {
           for hub in keys(local.hubs) : hub => {
             spokes = {
               for spoke_project in local.spoke_projects :
-              spoke_project.name => module.spoke["${hub}-${spoke_project.name}"].config.spoke
+              spoke_project.name => module.spoke["${hub}-${spoke_project.name}"].config
               if spoke_project.hub_location == hub
             }
           }

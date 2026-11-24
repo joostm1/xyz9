@@ -1,3 +1,58 @@
+data "azuread_user" "owner" {
+  user_principal_name = var.spoke.project.owner
+}
+data "azurerm_subscription" "current" {}
+# Create the `<spoke>-owner` application and store its PKCS#12 in `kv-xyz9-azhubs` for the spoke azurerm provider
+resource "tls_private_key" "client" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+resource "tls_self_signed_cert" "client" {
+  private_key_pem       = tls_private_key.client.private_key_pem
+  validity_period_hours = 87600
+  allowed_uses          = ["client_auth", "digital_signature", "key_encipherment"]
+  subject {
+    common_name  = "${var.spoke.name}-owner.${var.org.about.dns_domain}"
+    organization = var.org.about.x509.org
+  }
+}
+resource "azuread_application" "client" {
+  display_name = "${var.spoke.name}-owner"
+  owners       = [data.azuread_user.owner.object_id]
+}
+resource "azuread_service_principal" "client" {
+  client_id = azuread_application.client.client_id
+  owners    = [data.azuread_user.owner.object_id]
+}
+resource "azuread_application_certificate" "client" {
+  application_id = azuread_application.client.id
+  type           = "AsymmetricX509Cert"
+  value          = tls_self_signed_cert.client.cert_pem
+}
+resource "azuread_group_member" "client" {
+  group_object_id  = var.spoke.owner_group_object_id
+  member_object_id = azuread_service_principal.client.object_id
+}
+data "external" "client_p12" {
+  program = ["python3", "${path.module}/../../aa-foundation/pkcs12.py"]
+  query = {
+    cert_pem = tls_self_signed_cert.client.cert_pem
+    key_pem  = tls_private_key.client.private_key_pem_pkcs8
+  }
+}
+resource "azurerm_key_vault_secret" "client_p12" {
+  name         = "${var.spoke.name}-owner-p12"
+  value        = data.external.client_p12.result.p12_b64
+  key_vault_id = var.project.vault.id
+  content_type = "application/x-pkcs12"
+}
+# Grant `<spoke>-owner` Owner on the azhubs subscription so spoke roots can create resource groups and role assignments
+resource "azurerm_role_assignment" "client_subscription" {
+  scope                = "/subscriptions/${var.project.azure.subscription_id}"
+  role_definition_name = "Owner"
+  principal_id         = azuread_service_principal.client.object_id
+  principal_type       = "ServicePrincipal"
+}
 # rg for the spoke vnet to land
 resource "azurerm_resource_group" "spoke_infra_rg" {
   name     = "rg-${var.project.name}-${var.hub.name}-${var.spoke.name}-spoke"

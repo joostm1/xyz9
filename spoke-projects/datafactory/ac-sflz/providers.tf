@@ -41,8 +41,8 @@ provider "azurerm" {
 provider "azurerm" {
   storage_use_azuread             = true
   tenant_id                       = var.tenant_id
-  subscription_id                 = local.config.projects.projects.azurerm.subscription.id
-  client_id                       = local.config.projects.projects.identity.owner.app_client_id
+  subscription_id                 = local.config.projects.azhubs.subscription.id
+  client_id                       = local.config.projects.azhubs.client.application.client_id
   client_certificate              = data.azurerm_key_vault_secret.owner_p12.value
   resource_provider_registrations = "extended"
   use_cli                         = false

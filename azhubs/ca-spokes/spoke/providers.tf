@@ -6,6 +6,12 @@ terraform {
     azuread = {
       source = "hashicorp/azuread"
     }
+    tls = {
+      source = "hashicorp/tls"
+    }
+    external = {
+      source = "hashicorp/external"
+    }
     azuredevops = {
       source = "microsoft/azuredevops"
     }

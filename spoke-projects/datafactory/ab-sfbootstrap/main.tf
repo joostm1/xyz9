@@ -1,17 +1,12 @@
 # snowflake bootstrap: create the Terraform provisioner using the initial admin only
 data "azurerm_key_vault_secret" "project_config" {
   name         = "${var.project_name}-config"
-  key_vault_id = var.corp_vault_id
+  key_vault_id = local.azhubs_vault_id
   provider     = azurerm.corp
 }
-data "azurerm_key_vault_secret" "datacenter_config" {
-  name         = "datacenter-config"
-  key_vault_id = var.corp_vault_id
-  provider     = azurerm.corp
-}
-data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.foundation_projects.secret_names.secrets.owner_p12
-  key_vault_id = var.corp_vault_id
+data "azurerm_key_vault_secret" "client_p12" {
+  name         = local.config.projects.azhubs.client.p12.name
+  key_vault_id = local.config.projects.azhubs.vault.id
   provider     = azurerm.corp
 }
 data "azurerm_key_vault_secret" "snowflake_account" {
@@ -31,9 +26,9 @@ resource "tls_private_key" "snowflake_provisioner" {
 # Create the `kv-xyz9-datafactory` project vault and store the Snowflake provisioner's keys there
 resource "azurerm_key_vault" "project" {
   name                          = "kv-${local.org.name}-${local.project.name}"
-  location                      = local.config.projects.datacenter.spoke.rg.location
-  resource_group_name           = local.config.projects.datacenter.spoke.rg.name
-  tenant_id                     = local.foundation_projects.entra.tenant_id
+  location                      = local.config.projects.azhubs.spoke.rg.location
+  resource_group_name           = local.config.projects.azhubs.spoke.rg.name
+  tenant_id                     = var.tenant_id
   sku_name                      = "standard"
   rbac_authorization_enabled    = true
   public_network_access_enabled = true
@@ -41,7 +36,7 @@ resource "azurerm_key_vault" "project" {
   soft_delete_retention_days    = 7
 }
 resource "azurerm_role_assignment" "project_vault_owners" {
-  for_each = local.project_vault_owner_principals
+  for_each             = local.project_vault_owner_principals
   scope                = azurerm_key_vault.project.id
   role_definition_name = "Key Vault Administrator"
   principal_id         = each.value
@@ -49,7 +44,7 @@ resource "azurerm_role_assignment" "project_vault_owners" {
 resource "azurerm_role_assignment" "project_vault_secrets_user_runtime" {
   scope                = azurerm_key_vault.project.id
   role_definition_name = "Key Vault Secrets User"
-  principal_id         = local.foundation_projects.identity.owner.app_object_id
+  principal_id         = local.config.projects.azhubs.client.service_principal.object_id
 }
 module "project_vault_rbac" {
   source               = "../../../catalog/terraform/modules/az/wait_for_rbac"

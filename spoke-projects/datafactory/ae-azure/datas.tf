@@ -1,7 +1,7 @@
-# predecessor remote_state + corp secrets (p12, Cloudflare DNS); config lives in predecessor output
+# predecessor remote state; `datafactory-owner-p12` lives in `kv-xyz9-azhubs`. Cloudflare DNS stays in the corporate vault
 data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.config.projects.projects.secret_names.secrets.owner_p12
-  key_vault_id = var.corp_vault_id
+  name         = local.config.projects.azhubs.client.p12.name
+  key_vault_id = local.config.projects.azhubs.vault.id
   provider     = azurerm.corp
 }
 data "azurerm_key_vault_secret" "dc_secrets" {
@@ -26,5 +26,5 @@ data "terraform_remote_state" "au_devops" {
 data "azurerm_key_vault_secret" "snowflake" {
   for_each     = toset(["snowflake-account-identifier", "snowflake-provisioner-private-key"])
   name         = each.value
-  key_vault_id = local.config.roots["am-sfbootstrap"].project_vault_id
+  key_vault_id = local.config.roots["ab-sfbootstrap"].project_vault_id
 }

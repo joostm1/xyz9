@@ -37,7 +37,7 @@ provider "azurerm" {
   storage_use_azuread             = true
   tenant_id                       = var.tenant_id
   subscription_id                 = local.project.azure.subscription_id
-  client_id                       = local.aa_foundation.owner.application.client_id
+  client_id                       = local.config.roots["aa-foundation"].owner.application.client_id
   client_certificate              = data.azurerm_key_vault_secret.owner_p12.value
   resource_provider_registrations = "extended"
   use_cli                         = false

@@ -1,4 +1,4 @@
-# Entra SCIM provisioning into Snowflake (`AAD_PROVISIONER` / `SCIM_PROVISIONER` come from am-sfbootstrap)
+# Entra SCIM provisioning into Snowflake (`AAD_PROVISIONER` / `SCIM_PROVISIONER` come from ab-sfbootstrap)
 resource "snowflake_scim_integration" "snowflake_entraid_scim" {
   name           = local.resource_names.snowflake.scim_integration
   enabled        = true

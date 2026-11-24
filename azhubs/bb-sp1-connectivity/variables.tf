@@ -1,6 +1,3 @@
-variable "org_name" {
-  type = string
-}
 variable "state_key" {
   type = string
 }
@@ -11,9 +8,6 @@ variable "corp_vault_id" {
   type = string
 }
 variable "tenant_id" {
-  type = string
-}
-variable "subscription_id" {
   type = string
 }
 variable "storage_account_name" {
@@ -27,8 +21,8 @@ locals {
   org        = jsondecode(file("${local.org_folder}/org.json"))
   project    = jsondecode(file("${local.org_folder}/projects/${var.project_name}.json"))
   config     = data.terraform_remote_state.ba_hubs.outputs.config
-  # lift aa-foundation contributions (project.vault)
-  project_view = merge(local.config, try(local.config.roots["aa-foundation"], {}))
+  # vault is created by am-foundation
+  project_view = merge(local.config, data.terraform_remote_state.am_foundation.outputs.config.roots["am-foundation"])
   # office sites are owned by the datacenter project seed
   offices = try(local.project.offices, {})
   hub_dns_ipv4 = [

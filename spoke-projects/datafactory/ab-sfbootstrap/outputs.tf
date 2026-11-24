@@ -1,9 +1,6 @@
 # same-project handoff: full living object with this root under roots[state_key]
 output "config" {
   value = merge(local.config, {
-    projects = merge(try(local.config.projects, {}), {
-      projects = local.foundation_projects
-    })
     roots = merge(try(local.config.roots, {}), {
       (var.state_key) = {
         project_vault_id  = azurerm_key_vault.project.id

@@ -5,8 +5,8 @@ module "platform_adf" {
   kind   = "platform"
   factory = {
     name                = local.resource_names.az.shir_host_adf
-    location            = local.config.projects.datacenter.spoke.rg.location
-    resource_group_name = local.config.projects.datacenter.spoke.rg.name
+    location            = local.config.projects.azhubs.spoke.rg.location
+    resource_group_name = local.config.projects.azhubs.spoke.rg.name
   }
   devops = {
     org_name               = local.config.roots["ad-devops"].org_name
@@ -20,11 +20,11 @@ module "platform_adf" {
   }
   deploy = {
     identity_name     = local.resource_names.az.adf_deploy_platform
-    tenant_id         = local.config.projects.projects.entra.tenant_id
-    resource_group_id = local.config.projects.datacenter.spoke.rg.id
+    tenant_id         = var.tenant_id
+    resource_group_id = local.config.projects.azhubs.spoke.rg.id
     subscription = {
-      id   = local.config.projects.projects.azurerm.subscription.id
-      name = local.config.projects.projects.azurerm.subscription.name
+      id   = local.config.projects.azhubs.subscription.id
+      name = local.config.projects.azhubs.subscription.name
     }
   }
   shir = {
@@ -33,10 +33,10 @@ module "platform_adf" {
   }
   connections = {
     project_name                               = local.project.name
-    project_vault_uri                          = local.config.roots["am-sfbootstrap"].project_vault_uri
-    project_vault_id                           = local.config.roots["am-sfbootstrap"].project_vault_id
-    account_identifier_privatelink_secret_name = local.config.roots["am-sfbootstrap"].provisioner.secret_names.account_identifier_privatelink
-    account_identifier_privatelink_secret_id   = local.config.roots["am-sfbootstrap"].provisioner.secret_resource_ids.account_identifier_privatelink
+    project_vault_uri                          = local.config.roots["ab-sfbootstrap"].project_vault_uri
+    project_vault_id                           = local.config.roots["ab-sfbootstrap"].project_vault_id
+    account_identifier_privatelink_secret_name = local.config.roots["ab-sfbootstrap"].provisioner.secret_names.account_identifier_privatelink
+    account_identifier_privatelink_secret_id   = local.config.roots["ab-sfbootstrap"].provisioner.secret_resource_ids.account_identifier_privatelink
     adf_key_secret_name                        = azurerm_key_vault_secret.platform_adf_key.name
     snowflake_database                         = local.config.roots["ac-sflz"].platform.database
     snowflake_role                             = snowflake_service_user.platform_adf.default_role

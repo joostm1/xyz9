@@ -14,7 +14,7 @@ resource "azuread_application" "snowflake_entraid_sso_app" {
   display_name = "Snowflake ${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)} SAML SSO"
   description  = "Snowflake ${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)} SAML SSO integration application"
   template_id  = data.azuread_application_template.snowflake_entra_sso.id
-  owners       = toset([local.config.projects.projects.identity.owner.user_object_id, local.config.projects.projects.identity.owner.app_object_id])
+  owners       = toset([local.config.projects.azhubs.owner_user.object_id, local.config.projects.azhubs.client.service_principal.object_id])
   identifier_uris = [
     "https://${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.${local.resource_names.snowflake.service_urls.svc}"
   ]
@@ -49,7 +49,7 @@ resource "azuread_application" "snowflake_entraid_sso_app" {
 }
 resource "azuread_service_principal" "snowflake_entraid_sso_principal" {
   client_id                    = azuread_application.snowflake_entraid_sso_app.client_id
-  owners                       = toset([local.config.projects.projects.identity.owner.user_object_id, local.config.projects.projects.identity.owner.app_object_id])
+  owners                       = toset([local.config.projects.azhubs.owner_user.object_id, local.config.projects.azhubs.client.service_principal.object_id])
   use_existing                 = true # adopt the principal created by snowflake_entraid_sso_app
   app_role_assignment_required = true
   feature_tags {
@@ -81,7 +81,7 @@ resource "azuread_group" "project_roles" {
   for_each         = module.project_roles.by_key
   display_name     = "sg-${var.project_name}-${each.value.name}"
   description      = "security group for the ${each.value.name} role in the snowflake account"
-  owners           = toset([local.config.projects.projects.identity.owner.user_object_id, local.config.projects.projects.identity.owner.app_object_id])
+  owners           = toset([local.config.projects.azhubs.owner_user.object_id, local.config.projects.azhubs.client.service_principal.object_id])
   security_enabled = true
 }
 # assign the groups to the app_roles in the sso integration app

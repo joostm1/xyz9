@@ -1,6 +1,6 @@
 # ba-locations/main.tf - create a [private ip] point of presence in azure regions
 data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.config.projects.projects.secret_names.secrets.owner_p12
+  name         = local.config.roots["aa-foundation"].owner.p12.name
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
@@ -11,11 +11,23 @@ data "azurerm_key_vault_secret" "dc_secrets" {
   provider     = azurerm.corp
 }
 data "azurerm_key_vault_certificate_data" "datacenter_cacert" {
-  name         = local.config.projects.projects.secret_names.certs.project_ca
+  name         = local.config.roots["aa-foundation"].project_ca.name
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
 # our predecessor
+data "terraform_remote_state" "am_foundation" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = var.resource_group_name
+    storage_account_name = var.storage_account_name
+    container_name       = var.project_name
+    key                  = "am-foundation.tfstate"
+    use_azuread_auth     = true
+    tenant_id            = var.tenant_id
+    subscription_id      = split("/", var.corp_vault_id)[2]
+  }
+}
 data "terraform_remote_state" "aa_foundation" {
   backend = "azurerm"
   config = {
@@ -25,7 +37,7 @@ data "terraform_remote_state" "aa_foundation" {
     key                  = "aa-foundation.tfstate"
     use_azuread_auth     = true
     tenant_id            = var.tenant_id
-    subscription_id      = var.subscription_id
+    subscription_id      = split("/", var.corp_vault_id)[2]
   }
 }
 module "mesh_members" {

@@ -23,5 +23,5 @@ resource "snowflake_grant_account_role" "platform_adf" {
 resource "azurerm_key_vault_secret" "platform_adf_key" {
   name         = "snowflake-adf-key"
   value        = tls_private_key.platform_adf.private_key_pem_pkcs8
-  key_vault_id = local.config.roots["am-sfbootstrap"].project_vault_id
+  key_vault_id = local.config.roots["ab-sfbootstrap"].project_vault_id
 }

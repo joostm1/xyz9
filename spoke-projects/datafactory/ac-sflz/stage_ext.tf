@@ -2,8 +2,8 @@
 # --- Azure landing surface ---
 resource "azurerm_storage_account" "sflz_external_stage" {
   name                            = local.resource_names.az.ext_stage
-  resource_group_name             = local.config.projects.datacenter.spoke.rg.name
-  location                        = local.config.projects.datacenter.spoke.rg.location
+  resource_group_name             = local.config.projects.azhubs.spoke.rg.name
+  location                        = local.config.projects.azhubs.spoke.rg.location
   allow_nested_items_to_be_public = false
   default_to_oauth_authentication = true
   account_kind                    = "StorageV2"
@@ -59,8 +59,8 @@ resource "snowflake_storage_integration_azure" "sflz" {
 resource "azuread_service_principal" "sflz_storage_mta" {
   client_id = local.storage_integration_client_id
   owners = toset([
-    local.config.projects.projects.identity.owner.user_object_id,
-    local.config.projects.projects.identity.owner.app_object_id,
+    local.config.projects.azhubs.owner_user.object_id,
+    local.config.projects.azhubs.client.service_principal.object_id,
   ])
   lifecycle {
     ignore_changes = [owners] # owner app cannot mutate multi-tenant Snowflake SPs
@@ -246,8 +246,8 @@ resource "azapi_resource_action" "approve_sf_end_ext_stage_queue" {
 # system topic for the external stage storage account
 resource "azurerm_eventgrid_system_topic" "sflz_external_stage_topic" {
   name                = local.resource_names.az.storage_system_topic
-  resource_group_name = local.config.projects.datacenter.spoke.rg.name
-  location            = local.config.projects.datacenter.spoke.rg.location
+  resource_group_name = local.config.projects.azhubs.spoke.rg.name
+  location            = local.config.projects.azhubs.spoke.rg.location
   source_resource_id  = azurerm_storage_account.sflz_external_stage.id
   topic_type          = "microsoft.storage.storageaccounts"
   identity {
@@ -285,8 +285,8 @@ resource "azuread_service_principal" "sflz_notification_mta" {
   count     = local.notification_integration_client_id != null ? 1 : 0
   client_id = local.notification_integration_client_id
   owners = toset([
-    local.config.projects.projects.identity.owner.user_object_id,
-    local.config.projects.projects.identity.owner.app_object_id,
+    local.config.projects.azhubs.owner_user.object_id,
+    local.config.projects.azhubs.client.service_principal.object_id,
   ])
   lifecycle {
     ignore_changes = [owners] # owner app cannot mutate multi-tenant Snowflake SPs
@@ -304,7 +304,7 @@ resource "azurerm_eventgrid_system_topic_event_subscription" "sflz_external_stag
   for_each              = azurerm_storage_container.layer
   name                  = "es-${each.value.name}"
   system_topic          = azurerm_eventgrid_system_topic.sflz_external_stage_topic.name
-  resource_group_name   = local.config.projects.datacenter.spoke.rg.name
+  resource_group_name   = local.config.projects.azhubs.spoke.rg.name
   event_delivery_schema = "EventGridSchema" # Required by SF: https://docs.snowflake.com/en/user-guide/tables-external-azure#supported-accounts-apis-and-schemas
   delivery_identity {
     type = "SystemAssigned" # Use the identity of the topic to deliver the message

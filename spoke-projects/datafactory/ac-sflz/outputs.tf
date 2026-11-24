@@ -7,7 +7,7 @@ output "config" {
         resource_ids = {
           ext_stage            = azurerm_storage_account.sflz_external_stage.id
           int_stage            = data.snowflake_system_get_privatelink_config.snowflake_private_link.internal_stage
-          resource_group       = local.config.projects.datacenter.spoke.rg.id
+          resource_group       = local.config.projects.azhubs.spoke.rg.id
           storage_queue        = azurerm_storage_queue.sflz_notification_queue.id
           storage_system_topic = azurerm_eventgrid_system_topic.sflz_external_stage_topic.id
         }

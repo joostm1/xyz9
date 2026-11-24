@@ -1,6 +1,6 @@
 # Install generated IPsec mesh files on office EdgeRouters.
 data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.config.projects.projects.secret_names.secrets.owner_p12
+  name         = local.config.roots["aa-foundation"].owner.p12.name
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
@@ -11,11 +11,23 @@ data "azurerm_key_vault_secret" "office_ssh" {
   provider     = azurerm.corp
 }
 data "azurerm_key_vault_certificate_data" "datacenter_cacert" {
-  name         = local.config.projects.projects.secret_names.certs.project_ca
+  name         = local.config.roots["aa-foundation"].project_ca.name
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
 # our predecessor
+data "terraform_remote_state" "am_foundation" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = var.resource_group_name
+    storage_account_name = var.storage_account_name
+    container_name       = var.project_name
+    key                  = "am-foundation.tfstate"
+    use_azuread_auth     = true
+    tenant_id            = var.tenant_id
+    subscription_id      = split("/", var.corp_vault_id)[2]
+  }
+}
 data "terraform_remote_state" "ba_hubs" {
   backend = "azurerm"
   config = {
@@ -25,7 +37,7 @@ data "terraform_remote_state" "ba_hubs" {
     key                  = "ba-hubs.tfstate"
     use_azuread_auth     = true
     tenant_id            = var.tenant_id
-    subscription_id      = var.subscription_id
+    subscription_id      = split("/", var.corp_vault_id)[2]
   }
 }
 module "mesh_members" {

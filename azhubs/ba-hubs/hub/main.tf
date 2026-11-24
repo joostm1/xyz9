@@ -202,12 +202,10 @@ resource "azurerm_network_interface" "nvanic1" {
     primary                       = false
   }
 }
-# private key for ipsec
 resource "tls_private_key" "nva_ipsec_key" {
   algorithm = "RSA"
   rsa_bits  = 2048
 }
-# sign request for the nva's cert
 resource "tls_cert_request" "nva_ipsec_csr" {
   private_key_pem = tls_private_key.nva_ipsec_key.private_key_pem
   dns_names = [
@@ -224,7 +222,6 @@ resource "tls_cert_request" "nva_ipsec_csr" {
     common_name  = "r${var.hub.name}.${var.config.org.about.dns_domain}"
   }
 }
-# cert for ipsec
 resource "tls_locally_signed_cert" "nva_ipsec_cert" {
   cert_request_pem      = tls_cert_request.nva_ipsec_csr.cert_request_pem
   ca_private_key_pem    = var.config.project_ca.key

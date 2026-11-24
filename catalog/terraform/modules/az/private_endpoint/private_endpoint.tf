@@ -48,7 +48,7 @@ variable "private_connection_resource" {
 }
 variable "dnszoneresourcegroup_id" {
   type    = string
-  default = "/subscriptions/98000b13-b691-416e-ad86-ef05d9227b9e/resourceGroups/rg-datacenter"
+  default = "/subscriptions/98000b13-b691-416e-ad86-ef05d9227b9e/resourceGroups/rg-azhubs"
 }
 variable "is_manual_connection" {
   type    = bool

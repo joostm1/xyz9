@@ -1,5 +1,5 @@
 # account platform objects: PLATFORM warehouse, PLATFORM database/schemas, PLATFORM_ADF role
-# network policies (`ALLOW_ALL`, `DBT_CLOUD`) are created in am-sfbootstrap
+# network policies (`ALLOW_ALL`, `DBT_CLOUD`) are created in ab-sfbootstrap
 data "snowflake_system_get_snowflake_platform_info" "platform_info" {
   provider = snowflake.accountadmin
 }

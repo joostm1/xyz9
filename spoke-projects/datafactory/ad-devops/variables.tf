@@ -1,7 +1,4 @@
 # module inputs; same-project config from ac-sflz remote_state
-variable "org_name" {
-  type = string
-}
 variable "state_key" {
   type = string
 }

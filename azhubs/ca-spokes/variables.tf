@@ -1,6 +1,3 @@
-variable "org_name" {
-  type = string
-}
 variable "state_key" {
   type = string
 }
@@ -13,9 +10,6 @@ variable "corp_vault_id" {
 variable "tenant_id" {
   type = string
 }
-variable "subscription_id" {
-  type = string
-}
 variable "storage_account_name" {
   type = string
 }
@@ -26,8 +20,8 @@ locals {
   org_folder = "../../catalog"
   org        = jsondecode(file("${local.org_folder}/org.json"))
   config     = data.terraform_remote_state.ba_hubs.outputs.config
-  # lift aa-foundation contributions for spoke paths (project.rg, project.azure)
-  project_view = merge(local.config, try(local.config.roots["aa-foundation"], {}))
+  # rg-azhubs is created by am-foundation; azure.private_dns_zones stays on the seed in config
+  project_view = merge(local.config, data.terraform_remote_state.am_foundation.outputs.config.roots["am-foundation"])
   # deployed hubs from predecessor root
   hubs = try(local.config.roots["ba-hubs"].hubs, {})
   # spoke candidates: hub_location alone filters

@@ -1,7 +1,7 @@
-# bootstrap remote_state + corp secrets (p12); config lives in predecessor output
+# predecessor remote state; `datafactory-owner-p12` lives in `kv-xyz9-azhubs`
 data "azurerm_key_vault_secret" "owner_p12" {
-  name         = local.config.projects.projects.secret_names.secrets.owner_p12
-  key_vault_id = var.corp_vault_id
+  name         = local.config.projects.azhubs.client.p12.name
+  key_vault_id = local.config.projects.azhubs.vault.id
   provider     = azurerm.corp
 }
 data "terraform_remote_state" "am_sfbootstrap" {
@@ -10,7 +10,7 @@ data "terraform_remote_state" "am_sfbootstrap" {
     resource_group_name  = var.resource_group_name
     storage_account_name = var.storage_account_name
     container_name       = var.project_name
-    key                  = "am-sfbootstrap.tfstate"
+    key                  = "ab-sfbootstrap.tfstate"
     use_azuread_auth     = true
     subscription_id      = split("/", var.corp_vault_id)[2]
     tenant_id            = var.tenant_id
@@ -19,7 +19,7 @@ data "terraform_remote_state" "am_sfbootstrap" {
 data "azurerm_key_vault_secret" "snowflake" {
   for_each     = toset(["snowflake-account-identifier", "snowflake-provisioner-private-key", "snowflake-scim-pat"])
   name         = each.value
-  key_vault_id = local.config.roots["am-sfbootstrap"].project_vault_id
+  key_vault_id = local.config.roots["ab-sfbootstrap"].project_vault_id
 }
 module "project_roles" {
   source          = "../../../catalog/terraform/modules/scope_enumerator"

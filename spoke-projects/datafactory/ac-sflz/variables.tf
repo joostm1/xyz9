@@ -1,7 +1,4 @@
-# module inputs; same-project config from am-sfbootstrap remote_state
-variable "org_name" {
-  type = string
-}
+# module inputs; same-project config from ab-sfbootstrap remote_state
 variable "state_key" {
   type = string
 }
@@ -26,6 +23,8 @@ locals {
   project = jsondecode(file("../../../catalog/projects/${var.project_name}.json"))
   # our predecessor
   config = data.terraform_remote_state.am_sfbootstrap.outputs.config
+  # private DNS zones are in the same resource group as kv-xyz9-azhubs
+  private_dns_rg_id = regex("^/subscriptions/[^/]+/resourceGroups/[^/]+", local.config.projects.azhubs.vault.id)
   resource_names = {
     az = {
       ext_stage            = "sa${local.project.name}stage"
@@ -55,8 +54,8 @@ locals {
       dbt_cloud_external_oauth = "INT_SECURITY_EXTERNAL_OAUTH_DBT_CLOUD"
       scim_external_oauth      = "EXTERNAL_OAUTH_FOR_SCIM"
       scim_integration         = "INT_SECURITY_SCIM"
-      scim_provisioner_role    = local.config.roots["am-sfbootstrap"].scim.provisioner_role
-      scim_service_user        = local.config.roots["am-sfbootstrap"].scim.service_user
+      scim_provisioner_role    = local.config.roots["ab-sfbootstrap"].scim.provisioner_role
+      scim_service_user        = local.config.roots["ab-sfbootstrap"].scim.service_user
     }
   }
   # snowflake_execute.query is empty at first plan; one()/[0] would crash
@@ -82,7 +81,7 @@ locals {
         description  = "Grant blob access to the storage integration service principal on the external stage storage account"
       }
       deployment_principal_storage_blob_contributor = {
-        principal_id = local.config.projects.projects.identity.owner.app_object_id
+        principal_id = local.config.projects.azhubs.client.service_principal.object_id
         role_name    = "Storage Blob Data Contributor"
         description  = "Grant blob data to deployment principal on the external stage storage account"
       }

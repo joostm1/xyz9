@@ -20,7 +20,7 @@ resource "azurerm_role_assignment" "dataset_roles_account_identifier" {
     for key, group in azuread_group.project_roles : key => group
     if startswith(key, "dataset-")
   }
-  scope                = local.config.roots["am-sfbootstrap"].provisioner.secret_resource_ids.account_identifier
+  scope                = local.config.roots["ab-sfbootstrap"].provisioner.secret_resource_ids.account_identifier
   role_definition_name = "Key Vault Secrets User"
   principal_id         = each.value.object_id
   principal_type       = "Group"
