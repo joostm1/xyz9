@@ -34,6 +34,11 @@
       "format": "email",
       "description": "Project owner email"
     },
+    "owner_group": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Entra security group display name for the project owners, e.g. azhubs-owners"
+    },
     "description": {
       "type": "string",
       "minLength": 1,
@@ -48,12 +53,12 @@
     },
     "hub_location": {
       "type": "string",
-      "description": "Hub location code from `projects/datacenter.json`, hubs key. Only set this for projects that land on a connected hub.",
+      "description": "Hub location code from `catalog/projects/azhubs.json`, hubs key. Only set this for projects that land on a connected hub.",
       "enum": ["apc1", "apc2", "eas1"]
     },
     "hubs": {
       "type": "object",
-      "description": "datacenter hubs keyed by hub code. Only set on the datacenter project seed.",
+      "description": "Hubs keyed by hub code. Only set on the azhubs project seed.",
       "additionalProperties": {
         "type": "object",
         "required": ["region", "address_space", "spokes_address_space"],
@@ -73,7 +78,7 @@
     },
     "offices": {
       "type": "object",
-      "description": "Office sites that join the hub IPsec mesh, keyed by office code. Set on the owning project seed (currently datacenter).",
+      "description": "Office sites that join the hub IPsec mesh, keyed by office code. Set on the azhubs project seed.",
       "additionalProperties": {
         "type": "object",
         "required": ["name"],
@@ -86,9 +91,9 @@
           },
           "network": {
             "type": "object",
-            "description": "Prefixes this office advertises, its router DNS label, and the LAN, WAN, DHCP, DNS, and inbound forwards taken from that router. Passwords stay on the router.",
+            "description": "Prefixes this office advertises and its router DNS label.",
             "additionalProperties": false,
-            "required": ["address_space", "router", "lan", "wan", "dhcp", "dns", "forwards"],
+            "required": ["address_space", "router"],
             "properties": {
               "address_space": {
                 "$ref": "#/$defs/cidr_list",
@@ -98,171 +103,6 @@
                 "type": "string",
                 "pattern": "^[a-z0-9-]+$",
                 "description": "Router DNS label (e.g. egx). IKE identity is {router}.{dns_domain}; peers reach it at {router}-ipv4.{dns_domain}"
-              },
-              "lan": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["interface", "addresses"],
-                "properties": {
-                  "interface": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "addresses": {
-                    "$ref": "#/$defs/cidr_list"
-                  }
-                }
-              },
-              "wan": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["interface", "parent", "nat"],
-                "properties": {
-                  "interface": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "WAN interface used for NAT and port-forward, e.g. pppoe0"
-                  },
-                  "parent": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Device under the WAN interface, e.g. eth0.6"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "user_id": {
-                    "type": "string",
-                    "description": "PPPoE user-id. The password stays on the router."
-                  },
-                  "ipv6_pd": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["prefix_length", "interface", "prefix_id", "host_address"],
-                    "properties": {
-                      "prefix_length": {
-                        "type": "integer"
-                      },
-                      "interface": {
-                        "type": "string"
-                      },
-                      "prefix_id": {
-                        "type": "string"
-                      },
-                      "host_address": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "nat": {
-                    "type": "string",
-                    "enum": ["masquerade"]
-                  }
-                }
-              },
-              "dhcp": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["subnet", "router", "dns", "domain", "start", "stop"],
-                "properties": {
-                  "subnet": {
-                    "type": "string"
-                  },
-                  "router": {
-                    "type": "string"
-                  },
-                  "dns": {
-                    "type": "string"
-                  },
-                  "domain": {
-                    "type": "string"
-                  },
-                  "start": {
-                    "type": "string"
-                  },
-                  "stop": {
-                    "type": "string"
-                  },
-                  "lease": {
-                    "type": "integer"
-                  },
-                  "unifi_controller": {
-                    "type": "string"
-                  }
-                }
-              },
-              "dns": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["listen", "servers"],
-                "properties": {
-                  "listen": {
-                    "type": "string"
-                  },
-                  "strict_order": {
-                    "type": "boolean"
-                  },
-                  "servers": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                      "type": "string",
-                      "minLength": 1
-                    }
-                  }
-                }
-              },
-              "address_groups": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "array",
-                  "minItems": 1,
-                  "items": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                }
-              },
-              "forwards": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["hairpin_nat", "auto_firewall", "rules"],
-                "properties": {
-                  "hairpin_nat": {
-                    "type": "boolean"
-                  },
-                  "auto_firewall": {
-                    "type": "boolean"
-                  },
-                  "rules": {
-                    "type": "object",
-                    "description": "Keyed by the WAN port. port is the address on the LAN host.",
-                    "additionalProperties": {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "required": ["description", "address", "port", "protocol"],
-                      "properties": {
-                        "description": {
-                          "type": "string"
-                        },
-                        "address": {
-                          "type": "string"
-                        },
-                        "port": {
-                          "type": "integer"
-                        },
-                        "protocol": {
-                          "type": "string",
-                          "enum": ["tcp", "udp"]
-                        },
-                        "source_group": {
-                          "type": "string",
-                          "description": "Name of an address_groups entry. WAN clients outside that group are dropped."
-                        }
-                      }
-                    }
-                  }
-                }
               }
             }
           },
@@ -277,6 +117,45 @@
               }
             }
           }
+        }
+      }
+    },
+    "azure": {
+      "type": "object",
+      "description": "Azure subscription, project resource group, and private DNS zones. Set on the azhubs project seed.",
+      "additionalProperties": false,
+      "required": ["rg", "subscription_id", "private_dns_zones"],
+      "properties": {
+        "rg": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "location"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Project resource group name, e.g. rg-azhubs"
+            },
+            "location": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Azure region for the project resource group, e.g. CentralIndia"
+            }
+          }
+        },
+        "subscription_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Subscription this project is deployed into. azurerm provider subscription_id. Role assignment scope is /subscriptions/<subscription_id>."
+        },
+        "private_dns_zones": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Private DNS zone names created in the project resource group"
         }
       }
     },

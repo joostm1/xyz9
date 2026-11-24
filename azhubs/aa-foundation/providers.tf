@@ -35,19 +35,6 @@ provider "azurerm" {
     }
   }
 }
-provider "azurerm" {
-  storage_use_azuread             = true
-  tenant_id                       = var.tenant_id
-  subscription_id                 = var.subscription_id
-  resource_provider_registrations = "extended"
-  use_cli                         = true
-  features {
-    key_vault {
-      purge_soft_delete_on_destroy    = true
-      recover_soft_deleted_key_vaults = false
-    }
-  }
-}
 provider "azuread" {
   tenant_id = var.tenant_id
   use_cli   = true

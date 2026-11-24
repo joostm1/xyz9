@@ -183,7 +183,7 @@ resource "azurerm_network_interface" "nvanic1" {
   name                           = "nvanic1"
   location                       = azurerm_resource_group.rghub.location
   resource_group_name            = azurerm_resource_group.rghub.name
-  accelerated_networking_enabled = true
+  accelerated_networking_enabled = false
   ip_forwarding_enabled          = true
   ip_configuration {
     name                          = "ipconfigv4"
@@ -268,7 +268,7 @@ resource "azurerm_linux_virtual_machine" "nva" {
   name                            = "r${var.hub.name}"
   resource_group_name             = azurerm_resource_group.rghub.name
   location                        = azurerm_resource_group.rghub.location
-  size                            = "Standard_D2s_v3"
+  size                            = "Standard_B2s"
   admin_username                  = var.hub.name
   network_interface_ids           = [azurerm_network_interface.nvanic1.id]
   custom_data                     = data.cloudinit_config.nvapost.rendered
@@ -286,7 +286,7 @@ resource "azurerm_linux_virtual_machine" "nva" {
     caching                   = "ReadOnly"
     storage_account_type      = "Standard_LRS"
     disk_size_gb              = 32
-    name                      = "r${var.hub.name}-osdisk"
+    name                      = "disk-${var.hub.name}-os"
     write_accelerator_enabled = false
   }
   source_image_reference {

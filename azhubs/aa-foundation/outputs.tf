@@ -1,18 +1,24 @@
 output "config" {
-  value = merge(local.config, {
-    roots = merge(try(local.config.roots, {}), {
+  value = merge(local.project, {
+    roots = merge(try(local.project.roots, {}), {
       (var.state_key) = {
-        rg = {
-          name     = azurerm_resource_group.project_rg.name
-          id       = azurerm_resource_group.project_rg.id
-          location = azurerm_resource_group.project_rg.location
+        owner = {
+          user = {
+            object_id = data.azuread_user.owner.object_id
+          }
+          application = {
+            client_id = azuread_application.owner.client_id
+          }
+          service_principal = {
+            object_id = azuread_service_principal.owner.object_id
+          }
+          group = {
+            object_id = azuread_group.owner.object_id
+          }
+          p12 = {
+            name = azurerm_key_vault_secret.owner_p12.name
+          }
         }
-        vault = {
-          name = azurerm_key_vault.project_kv.name
-          id   = azurerm_key_vault.project_kv.id
-        }
-        groups            = local.entra_scope_role_groups
-        scope_role_groups = local.scope_role_groups
       }
     })
   })

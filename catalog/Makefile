@@ -3,7 +3,6 @@ catalog_dir := $(repo_root)/catalog
 
 # Parent directory is the project. This directory is the state key.
 project := $(notdir $(patsubst %/,%,$(dir $(CURDIR))))
-org := $(shell jq -r .name $(catalog_dir)/org.json)
 state_key := $(notdir $(CURDIR))
 state_container_name := $(project)
 state_key_file_name := $(state_key).tfstate
@@ -15,7 +14,6 @@ tfopts := \
 tfvar_file := $(HOME)/.tfvars
 tfbackend_file := $(HOME)/.tfbackend.hcl
 tfvars := \
-	-var org_name=$(org) \
 	-var project_name=$(project) \
 	-var state_key=$(state_key) \
 	-var-file=$(tfvar_file)

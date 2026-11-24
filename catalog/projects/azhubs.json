@@ -5,7 +5,7 @@
   "roots": {},
   "projects": {},
   "owner": "joost@xyz9.net",
-  "owner_group": "datacenter-owners",
+  "owner_group": "azhubs-owners",
   "devops": {
     "project": {
       "name": "xyz9it"
@@ -19,6 +19,7 @@
       "name": "rg-azhubs",
       "location": "CentralIndia"
     },
+    "subscription_id": "98000b13-b691-416e-ad86-ef05d9227b9e",
     "private_dns_zones": [
       "privatelink.blob.core.windows.net",
       "privatelink.datafactory.azure.net",
