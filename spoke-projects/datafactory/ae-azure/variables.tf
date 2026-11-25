@@ -27,8 +27,10 @@ locals {
   org     = jsondecode(file("../../../catalog/org.json"))
   project = jsondecode(file("../../../catalog/projects/${var.project_name}.json"))
   # our predecessor
-  config   = data.terraform_remote_state.au_devops.outputs.config
-  datasets = local.config.scopes.datasets
+  config          = data.terraform_remote_state.au_devops.outputs.config
+  datasets        = local.config.scopes.datasets
+  azure_snowflake = local.config.snowflake.accounts["az1"]
+  azure_sflz      = local.config.roots["ac-sflz"].accounts["az1"]
   # private DNS zones are in the same resource group as kv-xyz9-azhubs
   private_dns_rg_id = regex("^/subscriptions/[^/]+/resourceGroups/[^/]+", local.config.projects.azhubs.vault.id)
   resource_names = {

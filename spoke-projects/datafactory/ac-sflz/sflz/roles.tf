@@ -10,17 +10,17 @@ resource "snowflake_account_role" "project_roles" {
 # role connection/demarcation point; GRANT ROLE <child> TO ROLE <parent>
 resource "snowflake_grant_account_role" "project_roles" {
   for_each         = module.project_roles.by_key
-  parent_role_name = upper(azuread_group.project_roles[each.key].display_name)
+  parent_role_name = upper(var.entra_groups[each.key].display_name)
   role_name        = snowflake_account_role.project_roles[each.key].name
   provider         = snowflake.securityadmin
 }
 # dataset data roles may read the shared Snowflake account identifier _secret_
 resource "azurerm_role_assignment" "dataset_roles_account_identifier" {
   for_each = {
-    for key, group in azuread_group.project_roles : key => group
+    for key, group in var.entra_groups : key => group
     if startswith(key, "dataset-")
   }
-  scope                = local.config.roots["ab-sfbootstrap"].provisioner.secret_resource_ids.account_identifier
+  scope                = var.account.provisioner.secret_resource_ids.account_identifier
   role_definition_name = "Key Vault Secrets User"
   principal_id         = each.value.object_id
   principal_type       = "Group"

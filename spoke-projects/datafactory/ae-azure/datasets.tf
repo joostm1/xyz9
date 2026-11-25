@@ -41,9 +41,9 @@ module "datasets" {
     tenant_id              = var.tenant_id
   }
   project_vault_uri                          = local.config.roots["ab-sfbootstrap"].project_vault_uri
-  account_identifier_privatelink_secret_name = local.config.roots["ab-sfbootstrap"].provisioner.secret_names.account_identifier_privatelink
-  account_identifier_privatelink_secret_id   = local.config.roots["ab-sfbootstrap"].provisioner.secret_resource_ids.account_identifier_privatelink
-  ext_stage_id                               = local.config.roots["ac-sflz"].resource_ids.ext_stage
-  ext_stage_account_name                     = local.config.roots["ac-sflz"].resource_names.az.ext_stage
+  account_identifier_privatelink_secret_name = local.azure_snowflake.provisioner.secret_names.account_identifier_privatelink
+  account_identifier_privatelink_secret_id   = local.azure_snowflake.provisioner.secret_resource_ids.account_identifier_privatelink
+  ext_stage_id                               = local.azure_sflz.resource_ids.ext_stage
+  ext_stage_account_name                     = local.azure_sflz.resource_names.az.ext_stage
   depends_on                                 = [azapi_resource_action.shir_install, azuredevops_git_repository_file.adf_publish_template]
 }

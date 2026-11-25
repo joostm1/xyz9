@@ -15,7 +15,7 @@ resource "snowflake_execute" "disable_internal_stage_public_access" {
 }
 # --- internal stage PE in our VNet (approve at snowflake's end) ---
 module "pe_internal_stage_blob" {
-  source                      = "../../../catalog/terraform/modules/az/private_endpoint"
+  source                      = "../../../../../catalog/terraform/modules/az/private_endpoint"
   private_connection_resource = data.snowflake_system_get_privatelink_config.snowflake_private_link.internal_stage
   location                    = local.config.projects.azhubs.spoke.rg.location
   name                        = local.resource_names.az.int_stage_pe_blob
@@ -50,10 +50,10 @@ resource "azurerm_private_endpoint" "pe_sflz_pvlinksvc" {
 }
 # get an access token for the snowflake private link approval call
 module "sflz_azure_access_token" {
-  source     = "../../../catalog/terraform/modules/entra/acquire_token_for_client"
+  source     = "../../../../../catalog/terraform/modules/entra/acquire_token_for_client"
   tenant_id  = var.tenant_id
   client_id  = local.config.projects.azhubs.client.application.client_id
-  p12_bundle = data.azurerm_key_vault_secret.owner_p12.value
+  p12_bundle = var.client_p12
   scopes     = ["https://management.azure.com/.default"]
 }
 resource "snowflake_execute" "pe_sflz_snowflake_service_approve_private_link" {
@@ -80,8 +80,8 @@ resource "azurerm_private_dns_cname_record" "privatelink_snowflake_svc" {
     regionless_snowsight_url = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.regionless_snowsight_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
     snowsight_url            = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.snowsight_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
     spcs_auth_url            = "sfc-endpoint-login.${local.resource_names.snowflake.location_id.west-europe}"
-    spcs_registry_url        = "${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.registry"
-    openflow_url             = "${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.openflow.${local.resource_names.snowflake.location_id.west-europe}"
+    spcs_registry_url        = "${lower(var.account.identifier)}.registry"
+    openflow_url             = "${lower(var.account.identifier)}.openflow.${local.resource_names.snowflake.location_id.west-europe}"
   }
   private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
   name                = each.value

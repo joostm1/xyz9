@@ -24,7 +24,7 @@ data "terraform_remote_state" "au_devops" {
   }
 }
 data "azurerm_key_vault_secret" "snowflake" {
-  for_each     = toset(["snowflake-account-identifier", "snowflake-provisioner-private-key"])
+  for_each     = toset([local.azure_snowflake.provisioner.secret_names.private_key])
   name         = each.value
   key_vault_id = local.config.roots["ab-sfbootstrap"].project_vault_id
 }

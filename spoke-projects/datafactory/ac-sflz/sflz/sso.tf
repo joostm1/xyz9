@@ -11,12 +11,12 @@ data "azuread_application_template" "snowflake_entra_sso" {
 }
 # saml sso integration app - https://learn.microsoft.com/en-us/entra/identity/saas-apps/snowflake-tutorial
 resource "azuread_application" "snowflake_entraid_sso_app" {
-  display_name = "Snowflake ${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)} SAML SSO"
-  description  = "Snowflake ${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)} SAML SSO integration application"
+  display_name = "Snowflake ${lower(var.account.identifier)} SAML SSO"
+  description  = "Snowflake ${lower(var.account.identifier)} SAML SSO integration application"
   template_id  = data.azuread_application_template.snowflake_entra_sso.id
   owners       = toset([local.config.projects.azhubs.owner_user.object_id, local.config.projects.azhubs.client.service_principal.object_id])
   identifier_uris = [
-    "https://${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.${local.resource_names.snowflake.service_urls.svc}"
+    "https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.svc}"
   ]
   api {
     requested_access_token_version = 2
@@ -28,8 +28,8 @@ resource "azuread_application" "snowflake_entraid_sso_app" {
     enterprise            = true
   }
   web {
-    redirect_uris = ["https://${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.${local.resource_names.snowflake.service_urls.svc}/fed/login"]
-    logout_url    = "https://${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.${local.resource_names.snowflake.service_urls.svc}/fed/logout"
+    redirect_uris = ["https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.svc}/fed/login"]
+    logout_url    = "https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.svc}/fed/logout"
     implicit_grant {
       access_token_issuance_enabled = false
       id_token_issuance_enabled     = true
@@ -57,7 +57,7 @@ resource "azuread_service_principal" "snowflake_entraid_sso_principal" {
     enterprise            = true
   }
   preferred_single_sign_on_mode = "saml"
-  login_url                     = "https://${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.${local.resource_names.snowflake.service_urls.svc}" // Sign on URL on single sign on page
+  login_url                     = "https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.svc}" // Sign on URL on single sign on page
 }
 resource "time_rotating" "snowflake_entraid_sso_cert_rotation" {
   rotation_days = 365
@@ -76,18 +76,10 @@ resource "azuread_service_principal_token_signing_certificate" "snowflake_entrai
     ]
   }
 }
-# create ad groups for each project role
-resource "azuread_group" "project_roles" {
-  for_each         = module.project_roles.by_key
-  display_name     = "sg-${var.project_name}-${each.value.name}"
-  description      = "security group for the ${each.value.name} role in the snowflake account"
-  owners           = toset([local.config.projects.azhubs.owner_user.object_id, local.config.projects.azhubs.client.service_principal.object_id])
-  security_enabled = true
-}
 # assign the groups to the app_roles in the sso integration app
 resource "azuread_app_role_assignment" "snowflake_entraid_sso_app_roles" {
   for_each            = module.project_roles.by_key
-  principal_object_id = azuread_group.project_roles[each.key].object_id
+  principal_object_id = var.entra_groups[each.key].object_id
   app_role_id         = random_uuid.project_roles[each.key].id
   resource_object_id  = azuread_service_principal.snowflake_entraid_sso_principal.object_id
 }
@@ -108,8 +100,8 @@ resource "snowflake_saml2_integration" "snowflake_entraid_sso_integration" {
   saml2_sp_initiated_login_page_label = "SAML SSO"
   saml2_enable_sp_initiated           = "true"
   saml2_requested_nameid_format       = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
-  saml2_snowflake_acs_url             = "https://${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.${local.resource_names.snowflake.service_urls.svc}/fed/login"
-  saml2_snowflake_issuer_url          = "https://${lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value)}.${local.resource_names.snowflake.service_urls.svc}"
+  saml2_snowflake_acs_url             = "https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.svc}/fed/login"
+  saml2_snowflake_issuer_url          = "https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.svc}"
   provider                            = snowflake.securityadmin
   depends_on                          = [snowflake_grant_privileges_to_account_role.securityadmin_create_integration]
 }

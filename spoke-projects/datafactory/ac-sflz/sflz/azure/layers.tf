@@ -1,6 +1,6 @@
 # datasets × layers; azure facet is the ingest-container guinea pig
 module "dataset_x_layer" {
-  source = "../../../catalog/terraform/modules/map_join"
+  source = "../../../../../catalog/terraform/modules/map_join"
   left = {
     for dataset_key in keys(local.config.scopes.datasets) : dataset_key => {
       dataset_key = dataset_key
@@ -18,7 +18,7 @@ module "dataset_x_layer" {
   key_attrs        = ["dataset_key", "layer_key"]
 }
 module "dataset_x_layer_azure" {
-  source = "../../../catalog/terraform/modules/map_join"
+  source = "../../../../../catalog/terraform/modules/map_join"
   left   = module.dataset_x_layer.by_key
   right = {
     for layer_key, layer in local.project.layers : layer_key => merge(layer.azure, {
@@ -37,7 +37,7 @@ resource "azurerm_storage_container" "layer" {
   container_access_type = "private"
 }
 module "layer_azure_x_dataset_role" {
-  source = "../../../catalog/terraform/modules/map_join"
+  source = "../../../../../catalog/terraform/modules/map_join"
   left   = module.dataset_x_layer_azure.by_key
   right = merge([
     for schema_key, schema in local.project.snowflake.datasets.schemas : {
@@ -56,5 +56,5 @@ resource "azurerm_role_assignment" "layer_container_dataset_role" {
   for_each             = module.layer_azure_x_dataset_role.by_key
   scope                = azurerm_storage_container.layer["${each.value.dataset_key}-${each.value.layer_key}"].id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azuread_group.project_roles["dataset-${each.value.dataset_key}-${each.value.role}"].object_id
+  principal_id         = var.entra_groups["dataset-${each.value.dataset_key}-${each.value.role}"].object_id
 }

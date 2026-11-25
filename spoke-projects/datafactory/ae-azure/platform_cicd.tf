@@ -35,15 +35,15 @@ module "platform_adf" {
     project_name                               = local.project.name
     project_vault_uri                          = local.config.roots["ab-sfbootstrap"].project_vault_uri
     project_vault_id                           = local.config.roots["ab-sfbootstrap"].project_vault_id
-    account_identifier_privatelink_secret_name = local.config.roots["ab-sfbootstrap"].provisioner.secret_names.account_identifier_privatelink
-    account_identifier_privatelink_secret_id   = local.config.roots["ab-sfbootstrap"].provisioner.secret_resource_ids.account_identifier_privatelink
+    account_identifier_privatelink_secret_name = local.azure_snowflake.provisioner.secret_names.account_identifier_privatelink
+    account_identifier_privatelink_secret_id   = local.azure_snowflake.provisioner.secret_resource_ids.account_identifier_privatelink
     adf_key_secret_name                        = azurerm_key_vault_secret.platform_adf_key.name
-    snowflake_database                         = local.config.roots["ac-sflz"].platform.database
+    snowflake_database                         = local.azure_sflz.platform.database
     snowflake_role                             = snowflake_service_user.platform_adf.default_role
     snowflake_user                             = snowflake_service_user.platform_adf.name
     snowflake_warehouse                        = snowflake_service_user.platform_adf.default_warehouse
-    ext_stage_id                               = local.config.roots["ac-sflz"].resource_ids.ext_stage
-    ext_stage_account_name                     = local.config.roots["ac-sflz"].resource_names.az.ext_stage
+    ext_stage_id                               = local.azure_sflz.resource_ids.ext_stage
+    ext_stage_account_name                     = local.azure_sflz.resource_names.az.ext_stage
   }
   depends_on = [azuredevops_git_repository_file.adf_publish_template]
 }

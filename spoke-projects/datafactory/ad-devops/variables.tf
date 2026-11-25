@@ -22,6 +22,7 @@ locals {
   org     = jsondecode(file("../../../catalog/org.json"))
   project = jsondecode(file("../../../catalog/projects/${var.project_name}.json"))
   # our predecessor
-  config   = data.terraform_remote_state.as_sflz.outputs.config
-  datasets = local.config.scopes.datasets
+  config          = data.terraform_remote_state.as_sflz.outputs.config
+  datasets        = local.config.scopes.datasets
+  azure_snowflake = local.config.snowflake.accounts["az1"]
 }

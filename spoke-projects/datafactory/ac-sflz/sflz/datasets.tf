@@ -1,6 +1,6 @@
 # per-dataset warehouses, monitors, warehouse roles, and dataset databases
 module "warehouse_x_dataset" {
-  source = "../../../catalog/terraform/modules/map_join"
+  source = "../../../../catalog/terraform/modules/map_join"
   left = {
     for dataset_key in keys(local.config.scopes.datasets) : dataset_key => {
       dataset_key = dataset_key
@@ -61,20 +61,20 @@ resource "snowflake_grant_privileges_to_account_role" "warehouse_usage" {
 }
 # enumerate the parent roles for each warehouse profile, e.g., "reporting-engineer", "reporting-analyst"
 module "warehouse_parent_roles_enumerated" {
-  source          = "../../../catalog/terraform/modules/scope_enumerator"
+  source          = "../../../../catalog/terraform/modules/scope_enumerator"
   tree            = local.config.snowflake.datasets.warehouses
   enum_key        = "parent_dataset_roles"
   enum_value_name = "parent_role"
 }
 # enumerate the roles for each dataset, e.g., "dataset1-analyst", "dataset1-engineer"
 module "dataset_roles_enumerated" {
-  source          = "../../../catalog/terraform/modules/scope_enumerator"
+  source          = "../../../../catalog/terraform/modules/scope_enumerator"
   tree            = local.project.scopes.datasets
   enum_key        = "roles"
   enum_value_name = "role"
 }
 module "warehouse_role_parent_matrix" {
-  source = "../../../catalog/terraform/modules/map_join"
+  source = "../../../../catalog/terraform/modules/map_join"
   left = {
     for key, role in module.dataset_roles_enumerated.by_key : key => {
       dataset_key     = role.path_key

@@ -60,33 +60,33 @@ provider "azurerm" {
   }
 }
 provider "snowflake" {
-  organization_name        = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[0]
-  account_name             = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[1]
+  organization_name        = local.azure_snowflake.organization_name
+  account_name             = local.azure_snowflake.account_name
   user                     = lower(local.config.snowflake.provisioner_username)
   authenticator            = "SNOWFLAKE_JWT"
-  private_key              = data.azurerm_key_vault_secret.snowflake["snowflake-provisioner-private-key"].value
+  private_key              = data.azurerm_key_vault_secret.snowflake[local.azure_snowflake.provisioner.secret_names.private_key].value
   role                     = "ACCOUNTADMIN"
   warehouse                = "COMPUTE_WH"
   preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
   alias                    = "initial"
 }
 provider "snowflake" {
-  organization_name        = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[0]
-  account_name             = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[1]
+  organization_name        = local.azure_snowflake.organization_name
+  account_name             = local.azure_snowflake.account_name
   user                     = lower(local.config.snowflake.provisioner_username)
   authenticator            = "SNOWFLAKE_JWT"
-  private_key              = data.azurerm_key_vault_secret.snowflake["snowflake-provisioner-private-key"].value
+  private_key              = data.azurerm_key_vault_secret.snowflake[local.azure_snowflake.provisioner.secret_names.private_key].value
   role                     = "USERADMIN"
   warehouse                = "COMPUTE_WH"
   preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
   alias                    = "useradmin"
 }
 provider "snowflake" {
-  organization_name        = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[0]
-  account_name             = split("-", lower(data.azurerm_key_vault_secret.snowflake["snowflake-account-identifier"].value))[1]
+  organization_name        = local.azure_snowflake.organization_name
+  account_name             = local.azure_snowflake.account_name
   user                     = lower(local.config.snowflake.provisioner_username)
   authenticator            = "SNOWFLAKE_JWT"
-  private_key              = data.azurerm_key_vault_secret.snowflake["snowflake-provisioner-private-key"].value
+  private_key              = data.azurerm_key_vault_secret.snowflake[local.azure_snowflake.provisioner.secret_names.private_key].value
   role                     = "SECURITYADMIN"
   warehouse                = "COMPUTE_WH"
   preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled

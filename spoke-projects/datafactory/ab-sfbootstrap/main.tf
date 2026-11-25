@@ -9,17 +9,20 @@ data "azurerm_key_vault_secret" "client_p12" {
   key_vault_id = local.config.projects.azhubs.vault.id
   provider     = azurerm.corp
 }
-data "azurerm_key_vault_secret" "snowflake_account" {
-  for_each = toset([
-    "snowflake-account-identifier",
-    "snowflake-account-username",
-    "snowflake-account-private-key",
-  ])
-  name         = each.key
+# Read corp vault secret `snowflake-accounts` (xz9kviac)
+data "azurerm_key_vault_secret" "snowflake_accounts" {
+  name         = "snowflake-accounts"
+  key_vault_id = var.corp_vault_id
+  provider     = azurerm.corp
+}
+data "azurerm_key_vault_secret" "snowflake_admin_private_key" {
+  for_each     = local.snowflake_accounts
+  name         = each.value.private_key_secret_name
   key_vault_id = var.corp_vault_id
   provider     = azurerm.corp
 }
 resource "tls_private_key" "snowflake_provisioner" {
+  for_each  = local.snowflake_accounts
   algorithm = "RSA"
   rsa_bits  = 2048
 }
@@ -55,49 +58,13 @@ module "project_vault_rbac" {
   assignment_id        = each.key
   depends_on           = [azurerm_role_assignment.project_vault_owners]
 }
+# Store each account's identifier and `TERRAFORM_PROVISIONER` key in `kv-xyz9-datafactory`
 resource "azurerm_key_vault_secret" "snowflake_provisioner" {
-  for_each = {
-    "snowflake-account-identifier"             = data.azurerm_key_vault_secret.snowflake_account["snowflake-account-identifier"].value
-    "snowflake-account-identifier-privatelink" = "${lower(data.azurerm_key_vault_secret.snowflake_account["snowflake-account-identifier"].value)}.privatelink"
-    "snowflake-provisioner-private-key"        = tls_private_key.snowflake_provisioner.private_key_pem
-    "snowflake-provisioner-public-key"         = tls_private_key.snowflake_provisioner.public_key_pem
-  }
-  name         = each.key
-  value        = each.value
+  for_each = toset(flatten([
+    for name, names in local.account_secret_names : values(names)
+  ]))
+  name         = each.value
+  value        = local.snowflake_secret_values[each.value]
   key_vault_id = azurerm_key_vault.project.id
   depends_on   = [module.project_vault_rbac]
-}
-resource "snowflake_service_user" "provisioner" {
-  name                           = upper(local.config.snowflake.provisioner_username)
-  login_name                     = lower(local.config.snowflake.provisioner_username)
-  display_name                   = "Terraform Snowflake provisioner"
-  comment                        = "Service user for Terraform-managed Snowflake landing zone resources."
-  default_role                   = "ACCOUNTADMIN"
-  default_secondary_roles_option = "NONE"
-  default_warehouse              = "COMPUTE_WH"
-  disabled                       = "false"
-  rsa_public_key                 = tls_private_key.snowflake_provisioner.public_key_pem
-  provider                       = snowflake.initial
-}
-resource "snowflake_grant_account_role" "provisioner_admin_roles" {
-  for_each  = toset(["ACCOUNTADMIN", "SECURITYADMIN", "SYSADMIN", "USERADMIN"])
-  role_name = each.value
-  user_name = snowflake_service_user.provisioner.name
-  provider  = snowflake.initial
-}
-resource "snowflake_grant_privileges_to_account_role" "admin_compute_warehouse_usage" {
-  for_each          = toset(["ACCOUNTADMIN", "SECURITYADMIN", "SYSADMIN", "USERADMIN"])
-  account_role_name = each.value
-  privileges        = ["USAGE"]
-  on_account_object {
-    object_type = "WAREHOUSE"
-    object_name = "COMPUTE_WH"
-  }
-  provider = snowflake.initial
-}
-# Set `ENABLE_INTERNAL_STAGES_PRIVATELINK` so as-sflz can read privatelink-internal-stage from SYSTEM$GET_PRIVATELINK_CONFIG
-resource "snowflake_account_parameter" "enable_internal_stages_privatelink" {
-  key      = "ENABLE_INTERNAL_STAGES_PRIVATELINK"
-  value    = "true"
-  provider = snowflake.initial
 }

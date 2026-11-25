@@ -50,14 +50,26 @@ provider "azurerm" {
     }
   }
 }
+# Alias `initial` stays the Azure account `az1` so existing state is not replaced
 provider "snowflake" {
-  organization_name        = split("-", lower(data.azurerm_key_vault_secret.snowflake_account["snowflake-account-identifier"].value))[0]
-  account_name             = split("-", lower(data.azurerm_key_vault_secret.snowflake_account["snowflake-account-identifier"].value))[1]
-  user                     = lower(data.azurerm_key_vault_secret.snowflake_account["snowflake-account-username"].value)
+  organization_name        = local.snowflake_accounts["az1"].organization_name
+  account_name             = local.snowflake_accounts["az1"].account_name
+  user                     = lower(local.snowflake_accounts["az1"].username)
   authenticator            = "SNOWFLAKE_JWT"
-  private_key              = data.azurerm_key_vault_secret.snowflake_account["snowflake-account-private-key"].value
+  private_key              = data.azurerm_key_vault_secret.snowflake_admin_private_key["az1"].value
   role                     = "ACCOUNTADMIN"
   warehouse                = "COMPUTE_WH"
   preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
   alias                    = "initial"
+}
+provider "snowflake" {
+  organization_name        = local.snowflake_accounts["aw1"].organization_name
+  account_name             = local.snowflake_accounts["aw1"].account_name
+  user                     = lower(local.snowflake_accounts["aw1"].username)
+  authenticator            = "SNOWFLAKE_JWT"
+  private_key              = data.azurerm_key_vault_secret.snowflake_admin_private_key["aw1"].value
+  role                     = "ACCOUNTADMIN"
+  warehouse                = "COMPUTE_WH"
+  preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
+  alias                    = "aw1"
 }
