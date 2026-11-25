@@ -77,7 +77,6 @@ resource "azurerm_key_vault_secret" "spoke_configs" {
       })
     }
   ))
-  provider = azurerm.corp
 }
 # Grant the spoke owner group Key Vault Secrets User on `kv-xyz9-azhubs` so it can read the handoff
 resource "azurerm_role_assignment" "spoke_owner_secrets_user" {
@@ -85,5 +84,4 @@ resource "azurerm_role_assignment" "spoke_owner_secrets_user" {
   scope                = local.project_view.vault.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = data.azuread_group.spoke_owners[each.key].object_id
-  provider             = azurerm.corp
 }
