@@ -55,6 +55,7 @@ override.tf.json
 .terraformrc
 #terraform.rc
 .terraform.lock.hcl
+ac-sflz/sflz/generated/
 
 # Ignore JetBrains IDE files
 .idea

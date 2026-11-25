@@ -31,5 +31,17 @@ output "landing_zone" {
       provisioner_role            = local.resource_names.snowflake.scim_provisioner_role
     }
     containers = one(module.azure[*].containers)
+    openflow = length(snowflake_openflow_runtime.sharepoint) == 0 ? null : {
+      admin_role      = one(snowflake_account_role.openflow_admin[*].name)
+      deployment      = one(snowflake_openflow_deployment_snowflake_managed.openflow[*].name)
+      runtime         = one(snowflake_openflow_runtime.sharepoint[*].name)
+      runtime_url     = try(one(snowflake_openflow_runtime.sharepoint[*].describe_output)[0].server_url, null)
+      execute_as_role = one(snowflake_account_role.openflow_execute_as[*].name)
+      connector = length(snowflake_openflow_connector.sharepoint) == 0 ? null : {
+        name       = one(snowflake_openflow_connector.sharepoint[*].name)
+        definition = try(one(snowflake_openflow_connector.sharepoint[*].show_output)[0].connector_definition, null)
+        client_id  = one(azuread_application.openflow_sharepoint[*].client_id)
+      }
+    }
   }
 }

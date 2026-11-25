@@ -58,8 +58,35 @@ locals {
       scim_integration         = "INT_SECURITY_SCIM"
       scim_provisioner_role    = var.account.scim.provisioner_role
       scim_service_user        = var.account.scim.service_user
+      openflow = {
+        admin_role           = "OPENFLOW_ADMIN"
+        execute_as_role      = "OPENFLOW_SHAREPOINT_EXECUTE_AS_RL"
+        database             = "OPENFLOW"
+        schema               = "CONTROL"
+        deployment           = "OPENFLOW"
+        runtime              = "SHAREPOINT"
+        destination_database = "SHAREPOINT"
+        destination_schema   = "INGEST"
+        warehouse            = "SHAREPOINT"
+        network_rule         = "OPENFLOW_SHAREPOINT_NETWORK_RULE"
+        eai                  = "OPENFLOW_SHAREPOINT_EAI"
+        secret               = "SHAREPOINT_CLIENT_SECRET"
+        stage                = "CONNECTOR_BUNDLES"
+        connector            = "SHAREPOINT"
+      }
     }
   }
-  scim_integration_present = length(snowflake_execute.snowflake_entraid_scim_present.query_results) > 0
-  scim_endpoint_id         = try(snowflake_execute.snowflake_entraid_scim_endpoint[0].query_results[0].scim_endpoint_id, null)
+  openflow_enabled      = var.account.name == "az1"
+  sharepoint            = try(var.project.snowflake.openflow.sharepoint, null)
+  sharepoint_configured = local.openflow_enabled && try(local.sharepoint.site_url, "") != "" && try(local.sharepoint.document_library, "") != ""
+  sharepoint_definitions = local.openflow_enabled ? [
+    for item in data.snowflake_openflow_connector_definitions.sharepoint[0].openflow_connector_definitions : item.show_output[0]
+    if try(item.show_output[0].display_name, "") == "Microsoft SharePoint (Simple Ingest, no document ACLs)"
+  ] : []
+  sharepoint_definition_name = try(local.sharepoint_definitions[0].name, null)
+  sharepoint_min_node_type   = upper(try(local.sharepoint_definitions[0].min_runtime_node_type, "SMALL"))
+  openflow_node_type         = contains(["SMALL", "MEDIUM", "LARGE"], local.sharepoint_min_node_type) ? local.sharepoint_min_node_type : "SMALL"
+  sharepoint_host            = local.sharepoint_configured ? regex("^https://([^/]+)", local.sharepoint.site_url)[0] : null
+  scim_integration_present   = length(snowflake_execute.snowflake_entraid_scim_present.query_results) > 0
+  scim_endpoint_id           = try(snowflake_execute.snowflake_entraid_scim_endpoint[0].query_results[0].scim_endpoint_id, null)
 }

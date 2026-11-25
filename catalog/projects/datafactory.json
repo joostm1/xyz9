@@ -106,8 +106,16 @@
       "snowflake_system_get_privatelink_config_datasource",
       "snowflake_system_get_snowflake_platform_info_datasource",
       "snowflake_table_resource",
-      "snowflake_pipe_resource"
+      "snowflake_pipe_resource",
+      "snowflake_external_access_integration_resource"
     ],
+    "openflow": {
+      "sharepoint": {
+        "site_url": "https://xyz9.sharepoint.com/sites/openflow",
+        "document_library": "Documents",
+        "source_folder": ""
+      }
+    },
     "platform": {
       "warehouse": {
         "name": "PLATFORM",

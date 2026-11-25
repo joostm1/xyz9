@@ -38,6 +38,8 @@ locals {
   ])
   storage_integration_client_id      = try(regex("client_id=([^&]+)", snowflake_storage_integration_azure.sflz.describe_output[0].consent_url)[0], null)
   notification_integration_client_id = try(snowflake_execute.notification_integration_azure[0].query_results[0].client_id, null)
+  openflow_privatelink_host          = trimsuffix(trimspace(replace(replace(try(snowflake_execute.openflow_privatelink_url.query_results[0].openflow_privatelink_url, ""), "https://", ""), "http://", "")), ".${local.resource_names.snowflake.private_service_urls.svc}")
+  openflow_cname_name                = local.openflow_privatelink_host != "" ? local.openflow_privatelink_host : "${lower(var.account.identifier)}.openflow.${local.resource_names.snowflake.location_id.west-europe}"
   sflz_storage_role_assignments = merge(
     {
       storage_mta_principal_blob_contributor = {

@@ -14,7 +14,8 @@ terraform {
       source = "hashicorp/azurerm"
     }
     snowflake = {
-      source = "snowflakedb/snowflake"
+      source  = "snowflakedb/snowflake"
+      version = ">= 2.24.0"
     }
     azuread = {
       source = "hashicorp/azuread"
@@ -30,6 +31,9 @@ terraform {
     }
     time = {
       source = "hashicorp/time"
+    }
+    local = {
+      source = "hashicorp/local"
     }
   }
 }
@@ -70,7 +74,7 @@ provider "snowflake" {
   private_key              = data.azurerm_key_vault_secret.snowflake[local.snowflake_accounts["az1"].provisioner.secret_names.private_key].value
   role                     = "ACCOUNTADMIN"
   warehouse                = "COMPUTE_WH"
-  preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
+  preview_features_enabled = local.project.snowflake.terraform_provider_preview_features_enabled
   alias                    = "accountadmin"
 }
 provider "snowflake" {
@@ -81,7 +85,7 @@ provider "snowflake" {
   private_key              = data.azurerm_key_vault_secret.snowflake[local.snowflake_accounts["az1"].provisioner.secret_names.private_key].value
   role                     = "SECURITYADMIN"
   warehouse                = "COMPUTE_WH"
-  preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
+  preview_features_enabled = local.project.snowflake.terraform_provider_preview_features_enabled
   alias                    = "securityadmin"
 }
 provider "snowflake" {
@@ -92,7 +96,7 @@ provider "snowflake" {
   private_key              = data.azurerm_key_vault_secret.snowflake[local.snowflake_accounts["az1"].provisioner.secret_names.private_key].value
   role                     = "SYSADMIN"
   warehouse                = "COMPUTE_WH"
-  preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
+  preview_features_enabled = local.project.snowflake.terraform_provider_preview_features_enabled
   alias                    = "sysadmin"
 }
 provider "snowflake" {
@@ -103,7 +107,7 @@ provider "snowflake" {
   private_key              = data.azurerm_key_vault_secret.snowflake[local.snowflake_accounts["aw1"].provisioner.secret_names.private_key].value
   role                     = "ACCOUNTADMIN"
   warehouse                = "COMPUTE_WH"
-  preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
+  preview_features_enabled = local.project.snowflake.terraform_provider_preview_features_enabled
   alias                    = "aw1_accountadmin"
 }
 provider "snowflake" {
@@ -114,7 +118,7 @@ provider "snowflake" {
   private_key              = data.azurerm_key_vault_secret.snowflake[local.snowflake_accounts["aw1"].provisioner.secret_names.private_key].value
   role                     = "SECURITYADMIN"
   warehouse                = "COMPUTE_WH"
-  preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
+  preview_features_enabled = local.project.snowflake.terraform_provider_preview_features_enabled
   alias                    = "aw1_securityadmin"
 }
 provider "snowflake" {
@@ -125,6 +129,6 @@ provider "snowflake" {
   private_key              = data.azurerm_key_vault_secret.snowflake[local.snowflake_accounts["aw1"].provisioner.secret_names.private_key].value
   role                     = "SYSADMIN"
   warehouse                = "COMPUTE_WH"
-  preview_features_enabled = local.config.snowflake.terraform_provider_preview_features_enabled
+  preview_features_enabled = local.project.snowflake.terraform_provider_preview_features_enabled
   alias                    = "aw1_sysadmin"
 }

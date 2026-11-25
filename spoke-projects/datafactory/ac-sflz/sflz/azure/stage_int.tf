@@ -81,7 +81,6 @@ resource "azurerm_private_dns_cname_record" "privatelink_snowflake_svc" {
     snowsight_url            = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.snowsight_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
     spcs_auth_url            = "sfc-endpoint-login.${local.resource_names.snowflake.location_id.west-europe}"
     spcs_registry_url        = "${lower(var.account.identifier)}.registry"
-    openflow_url             = "${lower(var.account.identifier)}.openflow.${local.resource_names.snowflake.location_id.west-europe}"
   }
   private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
   name                = each.value
@@ -91,10 +90,31 @@ resource "azurerm_private_dns_cname_record" "privatelink_snowflake_svc" {
 # snowflake.app aliases as CNAMEs to _the_ A record
 resource "azurerm_private_dns_cname_record" "privatelink_snowflake_app" {
   for_each = {
-    app_service = "*.amszqu" # app-service-privatelink-url
+    app_service  = "*.amszqu" # app-service-privatelink-url
+    spcs_runtime = "*.spcs.${local.resource_names.snowflake.location_id.west-europe}"
   }
   name                = each.value
   private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.app}"
+  ttl                 = 300
+  record              = azurerm_private_dns_a_record.pe_sflz_snowflake_service_dns_a_record.fqdn
+}
+# `snowflake_system_get_privatelink_config` has no openflow-privatelink-url; read it from SYSTEM$GET_PRIVATELINK_CONFIG
+resource "snowflake_execute" "openflow_privatelink_url" {
+  execute  = "SELECT 1"
+  revert   = "SELECT 1"
+  query    = <<-EOT
+    SELECT PARSE_JSON(SYSTEM$GET_PRIVATELINK_CONFIG()):"openflow-privatelink-url"::string AS "openflow_privatelink_url"
+  EOT
+  provider = snowflake.accountadmin
+}
+moved {
+  from = azurerm_private_dns_cname_record.privatelink_snowflake_svc["openflow_url"]
+  to   = azurerm_private_dns_cname_record.openflow_privatelink
+}
+# CNAME `openflow-privatelink-url` at the Snowflake service private endpoint
+resource "azurerm_private_dns_cname_record" "openflow_privatelink" {
+  name                = local.openflow_cname_name
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
   ttl                 = 300
   record              = azurerm_private_dns_a_record.pe_sflz_snowflake_service_dns_a_record.fqdn
 }
