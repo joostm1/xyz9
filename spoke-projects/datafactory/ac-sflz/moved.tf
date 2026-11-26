@@ -177,7 +177,7 @@ moved {
 }
 moved {
   from = azapi_resource_action.approve_sf_end_ext_stage_blob
-  to   = module.sflz_az1.module.azure[0].azapi_resource_action.approve_sf_end_ext_stage_blob
+  to   = module.sflz_az1.module.azure[0].terraform_data.approve_sf_end_ext_stage_blob
 }
 moved {
   from = snowflake_execute.external_stage_queue_private_endpoint
@@ -193,7 +193,7 @@ moved {
 }
 moved {
   from = azapi_resource_action.approve_sf_end_ext_stage_queue
-  to   = module.sflz_az1.module.azure[0].azapi_resource_action.approve_sf_end_ext_stage_queue
+  to   = module.sflz_az1.module.azure[0].terraform_data.approve_sf_end_ext_stage_queue
 }
 moved {
   from = azurerm_eventgrid_system_topic.sflz_external_stage_topic

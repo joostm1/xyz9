@@ -51,7 +51,7 @@ resource "snowflake_storage_integration_azure" "sflz" {
   azure_tenant_id           = var.tenant_id
   storage_allowed_locations = [for c in azurerm_storage_container.layer : "azure://${azurerm_storage_account.sflz_external_stage.name}.blob.core.windows.net/${c.name}"]
   use_privatelink_endpoint  = local.ext_stage_blob_pe_connection != null ? "true" : "false"
-  depends_on                = [azapi_resource_action.approve_sf_end_ext_stage_blob]
+  depends_on                = [terraform_data.approve_sf_end_ext_stage_blob]
   provider                  = snowflake.accountadmin
 }
 # service principal for the storage integration app
@@ -67,12 +67,13 @@ resource "azuread_service_principal" "sflz_storage_mta" {
   }
 }
 # GET_PRIVATELINK_ENDPOINTS_INFO returns a JSON array of stringified endpoint objects
-# a deprovisioned endpoint stays PENDING_DELETION for 7 days; restore it, provision only when absent
+# DISCONNECTED cannot be repaired in place. Deprovision it; Snowflake blocks a replacement for 7 days.
 resource "snowflake_execute" "external_stage_private_endpoint" {
   execute  = <<-EOT
     EXECUTE IMMEDIATE $$
     DECLARE
       v_state STRING;
+      v_status STRING;
       deleting_endpoint EXCEPTION (-20002, 'outbound private endpoint is DELETING; Snowflake keeps it for 7 days and has no purge');
       failed_endpoint EXCEPTION (-20003, 'outbound private endpoint is FAILED; ask Snowflake support to clear it before provisioning again');
       unexpected_endpoint EXCEPTION (-20004, 'outbound private endpoint is in an unexpected state; refusing to provision');
@@ -82,12 +83,24 @@ resource "snowflake_execute" "external_stage_private_endpoint" {
         FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
         WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
           AND PARSE_JSON(f.value::string):subresource::string = 'blob'
+        ORDER BY IFF(PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'PENDING_CREATION'), 0, 1)
+        LIMIT 1
       );
-      IF (v_state = 'PENDING_DELETION') THEN
-        RETURN SYSTEM$RESTORE_PRIVATELINK_ENDPOINT(
+      v_status := (
+        SELECT PARSE_JSON(f.value::string):status::string
+        FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
+        WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
+          AND PARSE_JSON(f.value::string):subresource::string = 'blob'
+        ORDER BY IFF(PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'PENDING_CREATION'), 0, 1)
+        LIMIT 1
+      );
+      IF (v_state = 'CREATED' AND v_status IN ('DISCONNECTED', 'REJECTED')) THEN
+        RETURN SYSTEM$DEPROVISION_PRIVATELINK_ENDPOINT(
           '${azurerm_storage_account.sflz_external_stage.id}',
           'blob'
         );
+      ELSEIF (v_state = 'PENDING_DELETION') THEN
+        RETURN v_state;
       ELSEIF (v_state IS NULL) THEN
         RETURN SYSTEM$PROVISION_PRIVATELINK_ENDPOINT(
           '${azurerm_storage_account.sflz_external_stage.id}',
@@ -107,16 +120,35 @@ resource "snowflake_execute" "external_stage_private_endpoint" {
     $$;
   EOT
   revert   = <<-EOT
-    SELECT SYSTEM$DEPROVISION_PRIVATELINK_ENDPOINT(
-      '${azurerm_storage_account.sflz_external_stage.id}',
-      'blob'
-    );
+    EXECUTE IMMEDIATE $$
+    DECLARE
+      v_state STRING;
+    BEGIN
+      v_state := (
+        SELECT PARSE_JSON(f.value::string):endpoint_state::string
+        FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
+        WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
+          AND PARSE_JSON(f.value::string):subresource::string = 'blob'
+          AND PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'FAILED')
+        LIMIT 1
+      );
+      IF (v_state IS NOT NULL) THEN
+        RETURN SYSTEM$DEPROVISION_PRIVATELINK_ENDPOINT(
+          '${azurerm_storage_account.sflz_external_stage.id}',
+          'blob'
+        );
+      END IF;
+      RETURN 'not deprovisionable';
+    END;
+    $$;
   EOT
   query    = <<-EOT
     SELECT PARSE_JSON(f.value::string):snowflake_resource_id::string AS "snowflake_resource_id"
     FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
     WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
       AND PARSE_JSON(f.value::string):subresource::string = 'blob'
+      AND PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'PENDING_CREATION')
+      AND COALESCE(PARSE_JSON(f.value::string):status::string, 'PENDING') IN ('PENDING', 'APPROVED')
   EOT
   provider = snowflake.accountadmin
 }
@@ -124,7 +156,7 @@ resource "snowflake_execute" "external_stage_private_endpoint" {
 resource "time_sleep" "wait_for_ext_stage_blob_pe" {
   create_duration = "60s"
   triggers = {
-    private_endpoint_id = snowflake_execute.external_stage_private_endpoint.query_results[0].snowflake_resource_id
+    private_endpoint_id = try(snowflake_execute.external_stage_private_endpoint.query_results[0].snowflake_resource_id, "none")
   }
 }
 data "azapi_resource_list" "get_sf_end_ext_stage_blob" {
@@ -135,24 +167,13 @@ data "azapi_resource_list" "get_sf_end_ext_stage_blob" {
   }
   depends_on = [time_sleep.wait_for_ext_stage_blob_pe]
 }
-resource "azapi_resource_action" "approve_sf_end_ext_stage_blob" {
-  count       = local.ext_stage_blob_pe_connection != null ? 1 : 0
-  type        = "Microsoft.Storage/storageAccounts/privateEndpointConnections@2023-05-01"
-  resource_id = "${azurerm_storage_account.sflz_external_stage.id}/privateEndpointConnections/${local.ext_stage_blob_pe_connection}"
-  method      = "PUT"
-  body = {
-    properties = {
-      privateLinkServiceConnectionState = {
-        status      = "Approved"
-        description = "Snowflake privatelink at snowflake's end (blob)"
-      }
-    }
-  }
-  lifecycle {
-    precondition {
-      condition     = local.ext_stage_blob_pe_connection != null
-      error_message = "No private endpoint connection on ${azurerm_storage_account.sflz_external_stage.name} for ${try(snowflake_execute.external_stage_private_endpoint.query_results[0].snowflake_resource_id, "unknown")}. Azure registers that connection after Snowflake provisions or restores the endpoint."
-    }
+# Approve the blob connection when Azure has registered it. A disconnected endpoint stays queued for 7 days, so this is a no-op until then.
+resource "terraform_data" "approve_sf_end_ext_stage_blob" {
+  triggers_replace = [try(snowflake_execute.external_stage_private_endpoint.query_results[0].snowflake_resource_id, "none")]
+  provisioner "local-exec" {
+    command = local.ext_stage_blob_pe_connection == null ? "true" : <<-EOT
+      az rest --method put --url "https://management.azure.com${azurerm_storage_account.sflz_external_stage.id}/privateEndpointConnections/${local.ext_stage_blob_pe_connection}?api-version=2023-05-01" --body '{"properties":{"privateLinkServiceConnectionState":{"status":"Approved","description":"Snowflake privatelink at snowflake end (blob)"}}}'
+    EOT
   }
 }
 # --- notification path: queue PE at snowflake's end, then Event Grid + notification integration ---
@@ -162,6 +183,7 @@ resource "snowflake_execute" "external_stage_queue_private_endpoint" {
     EXECUTE IMMEDIATE $$
     DECLARE
       v_state STRING;
+      v_status STRING;
       deleting_endpoint EXCEPTION (-20002, 'outbound private endpoint is DELETING; Snowflake keeps it for 7 days and has no purge');
       failed_endpoint EXCEPTION (-20003, 'outbound private endpoint is FAILED; ask Snowflake support to clear it before provisioning again');
       unexpected_endpoint EXCEPTION (-20004, 'outbound private endpoint is in an unexpected state; refusing to provision');
@@ -171,12 +193,24 @@ resource "snowflake_execute" "external_stage_queue_private_endpoint" {
         FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
         WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
           AND PARSE_JSON(f.value::string):subresource::string = 'queue'
+        ORDER BY IFF(PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'PENDING_CREATION'), 0, 1)
+        LIMIT 1
       );
-      IF (v_state = 'PENDING_DELETION') THEN
-        RETURN SYSTEM$RESTORE_PRIVATELINK_ENDPOINT(
+      v_status := (
+        SELECT PARSE_JSON(f.value::string):status::string
+        FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
+        WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
+          AND PARSE_JSON(f.value::string):subresource::string = 'queue'
+        ORDER BY IFF(PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'PENDING_CREATION'), 0, 1)
+        LIMIT 1
+      );
+      IF (v_state = 'CREATED' AND v_status IN ('DISCONNECTED', 'REJECTED')) THEN
+        RETURN SYSTEM$DEPROVISION_PRIVATELINK_ENDPOINT(
           '${azurerm_storage_account.sflz_external_stage.id}',
           'queue'
         );
+      ELSEIF (v_state = 'PENDING_DELETION') THEN
+        RETURN v_state;
       ELSEIF (v_state IS NULL) THEN
         RETURN SYSTEM$PROVISION_PRIVATELINK_ENDPOINT(
           '${azurerm_storage_account.sflz_external_stage.id}',
@@ -196,23 +230,42 @@ resource "snowflake_execute" "external_stage_queue_private_endpoint" {
     $$;
   EOT
   revert   = <<-EOT
-    SELECT SYSTEM$DEPROVISION_PRIVATELINK_ENDPOINT(
-      '${azurerm_storage_account.sflz_external_stage.id}',
-      'queue'
-    );
+    EXECUTE IMMEDIATE $$
+    DECLARE
+      v_state STRING;
+    BEGIN
+      v_state := (
+        SELECT PARSE_JSON(f.value::string):endpoint_state::string
+        FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
+        WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
+          AND PARSE_JSON(f.value::string):subresource::string = 'queue'
+          AND PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'FAILED')
+        LIMIT 1
+      );
+      IF (v_state IS NOT NULL) THEN
+        RETURN SYSTEM$DEPROVISION_PRIVATELINK_ENDPOINT(
+          '${azurerm_storage_account.sflz_external_stage.id}',
+          'queue'
+        );
+      END IF;
+      RETURN 'not deprovisionable';
+    END;
+    $$;
   EOT
   query    = <<-EOT
     SELECT PARSE_JSON(f.value::string):snowflake_resource_id::string AS "snowflake_resource_id"
     FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$GET_PRIVATELINK_ENDPOINTS_INFO()))) f
     WHERE LOWER(PARSE_JSON(f.value::string):provider_resource_id::string) = LOWER('${azurerm_storage_account.sflz_external_stage.id}')
       AND PARSE_JSON(f.value::string):subresource::string = 'queue'
+      AND PARSE_JSON(f.value::string):endpoint_state::string IN ('CREATED', 'PENDING_CREATION')
+      AND COALESCE(PARSE_JSON(f.value::string):status::string, 'PENDING') IN ('PENDING', 'APPROVED')
   EOT
   provider = snowflake.accountadmin
 }
 resource "time_sleep" "wait_for_ext_stage_queue_pe" {
   create_duration = "60s"
   triggers = {
-    private_endpoint_id = snowflake_execute.external_stage_queue_private_endpoint.query_results[0].snowflake_resource_id
+    private_endpoint_id = try(snowflake_execute.external_stage_queue_private_endpoint.query_results[0].snowflake_resource_id, "none")
   }
 }
 data "azapi_resource_list" "get_sf_end_ext_stage_queue" {
@@ -223,24 +276,13 @@ data "azapi_resource_list" "get_sf_end_ext_stage_queue" {
   }
   depends_on = [time_sleep.wait_for_ext_stage_queue_pe]
 }
-resource "azapi_resource_action" "approve_sf_end_ext_stage_queue" {
-  count       = local.ext_stage_queue_pe_connection != null ? 1 : 0
-  type        = "Microsoft.Storage/storageAccounts/privateEndpointConnections@2023-05-01"
-  resource_id = "${azurerm_storage_account.sflz_external_stage.id}/privateEndpointConnections/${local.ext_stage_queue_pe_connection}"
-  method      = "PUT"
-  body = {
-    properties = {
-      privateLinkServiceConnectionState = {
-        status      = "Approved"
-        description = "Snowflake privatelink at snowflake's end (queue)"
-      }
-    }
-  }
-  lifecycle {
-    precondition {
-      condition     = local.ext_stage_queue_pe_connection != null
-      error_message = "No private endpoint connection on ${azurerm_storage_account.sflz_external_stage.name} for ${try(snowflake_execute.external_stage_queue_private_endpoint.query_results[0].snowflake_resource_id, "unknown")}. Azure registers that connection after Snowflake provisions or restores the endpoint."
-    }
+# Approve the queue connection when Azure has registered it. A disconnected endpoint stays queued for 7 days, so this is a no-op until then.
+resource "terraform_data" "approve_sf_end_ext_stage_queue" {
+  triggers_replace = [try(snowflake_execute.external_stage_queue_private_endpoint.query_results[0].snowflake_resource_id, "none")]
+  provisioner "local-exec" {
+    command = local.ext_stage_queue_pe_connection == null ? "true" : <<-EOT
+      az rest --method put --url "https://management.azure.com${azurerm_storage_account.sflz_external_stage.id}/privateEndpointConnections/${local.ext_stage_queue_pe_connection}?api-version=2023-05-01" --body '{"properties":{"privateLinkServiceConnectionState":{"status":"Approved","description":"Snowflake privatelink at snowflake end (queue)"}}}'
+    EOT
   }
 }
 # system topic for the external stage storage account
@@ -256,7 +298,7 @@ resource "azurerm_eventgrid_system_topic" "sflz_external_stage_topic" {
 }
 # notification integration — USE_PRIVATELINK_ENDPOINT only at CREATE (no ALTER); recreate may churn consent/SP
 resource "snowflake_execute" "notification_integration_azure" {
-  count      = local.ext_stage_queue_pe_connection != null ? 1 : 0
+  count      = 1
   execute    = <<-EOT
     CREATE OR REPLACE NOTIFICATION INTEGRATION ${upper(local.resource_names.snowflake.notification_integration)}
     TYPE = QUEUE
@@ -264,7 +306,7 @@ resource "snowflake_execute" "notification_integration_azure" {
     NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE
     AZURE_TENANT_ID = '${var.tenant_id}'
     AZURE_STORAGE_QUEUE_PRIMARY_URI = 'https://${azurerm_storage_account.sflz_external_stage.name}.queue.core.windows.net/${azurerm_storage_queue.sflz_notification_queue.name}'
-    USE_PRIVATELINK_ENDPOINT = TRUE
+    USE_PRIVATELINK_ENDPOINT = ${local.ext_stage_queue_pe_connection != null ? "TRUE" : "FALSE"}
   EOT
   revert     = <<-EOT
     DROP NOTIFICATION INTEGRATION IF EXISTS ${local.resource_names.snowflake.notification_integration}
@@ -276,13 +318,13 @@ resource "snowflake_execute" "notification_integration_azure" {
     FROM $1
     WHERE "property" = 'AZURE_CONSENT_URL'
   EOT
-  depends_on = [azapi_resource_action.approve_sf_end_ext_stage_queue]
+  depends_on = [terraform_data.approve_sf_end_ext_stage_queue]
   provider   = snowflake.accountadmin
 }
 # service principal for the notification integration app
 # owners recorded once; backing app is not in this tenant, so later owner updates are ignored
 resource "azuread_service_principal" "sflz_notification_mta" {
-  count     = local.notification_integration_client_id != null ? 1 : 0
+  count     = 1
   client_id = local.notification_integration_client_id
   owners = toset([
     local.config.projects.azhubs.owner_user.object_id,

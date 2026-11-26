@@ -27,19 +27,21 @@ resource "snowflake_execute" "snowflake_entraid_scim_present" {
   provider = snowflake.accountadmin
 }
 resource "snowflake_execute" "snowflake_entraid_scim_endpoint" {
-  count    = local.scim_integration_present ? 1 : 0
-  execute  = "SELECT 1"
-  revert   = "SELECT 1"
-  query    = <<-EOT
+  # query_results is unknown until apply, so it cannot decide count
+  count      = 1
+  execute    = "SELECT 1"
+  revert     = "SELECT 1"
+  query      = <<-EOT
     DESCRIBE SECURITY INTEGRATION ${local.resource_names.snowflake.scim_integration}
     ->> SELECT "property_value" AS "scim_endpoint_id"
     FROM $1
     WHERE "property" = 'SCIM_ENDPOINT_ID'
   EOT
-  provider = snowflake.accountadmin
+  depends_on = [snowflake_scim_integration.snowflake_entraid_scim]
+  provider   = snowflake.accountadmin
 }
 resource "azuread_synchronization_secret" "snowflake_entraid_scim" {
-  count                = local.scim_integration_present ? 1 : 0
+  count                = 1
   service_principal_id = "/servicePrincipals/${azuread_service_principal.snowflake_entraid_sso_principal.object_id}"
   credential {
     key   = "BaseAddress"
@@ -52,7 +54,7 @@ resource "azuread_synchronization_secret" "snowflake_entraid_scim" {
 }
 # sync now button
 resource "azuread_synchronization_job" "snowflake_entraid_scim" {
-  count                = local.scim_integration_present ? 1 : 0
+  count                = 1
   service_principal_id = "/servicePrincipals/${azuread_service_principal.snowflake_entraid_sso_principal.object_id}"
   template_id          = "snowFlake"
   enabled              = true

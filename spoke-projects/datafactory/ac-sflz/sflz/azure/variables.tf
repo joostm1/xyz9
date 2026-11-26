@@ -40,30 +40,26 @@ locals {
   notification_integration_client_id = try(snowflake_execute.notification_integration_azure[0].query_results[0].client_id, null)
   openflow_privatelink_host          = trimsuffix(trimspace(replace(replace(try(snowflake_execute.openflow_privatelink_url.query_results[0].openflow_privatelink_url, ""), "https://", ""), "http://", "")), ".${local.resource_names.snowflake.private_service_urls.svc}")
   openflow_cname_name                = local.openflow_privatelink_host != "" ? local.openflow_privatelink_host : "${lower(var.account.identifier)}.openflow.${local.resource_names.snowflake.location_id.west-europe}"
-  sflz_storage_role_assignments = merge(
-    {
-      storage_mta_principal_blob_contributor = {
-        principal_id = azuread_service_principal.sflz_storage_mta.object_id
-        role_name    = "Storage Blob Data Contributor"
-        description  = "Grant blob access to the storage integration service principal on the external stage storage account"
-      }
-      deployment_principal_storage_blob_contributor = {
-        principal_id = local.config.projects.azhubs.client.service_principal.object_id
-        role_name    = "Storage Blob Data Contributor"
-        description  = "Grant blob data to deployment principal on the external stage storage account"
-      }
-      external_stage_system_topic = {
-        principal_id = azurerm_eventgrid_system_topic.sflz_external_stage_topic.identity[0].principal_id
-        role_name    = "Storage Queue Data Message Sender"
-        description  = "Grant send messages permission to Event Grid System Topic to send messages to the notification queue"
-      }
-    },
-    local.notification_integration_client_id == null ? {} : {
-      notification_mta_principal_queue_contributor = {
-        principal_id = azuread_service_principal.sflz_notification_mta[0].object_id
-        role_name    = "Storage Queue Data Contributor"
-        description  = "Grant queue access to the notification integration service principal on the external stage storage account"
-      }
+  sflz_storage_role_assignments = {
+    storage_mta_principal_blob_contributor = {
+      principal_id = azuread_service_principal.sflz_storage_mta.object_id
+      role_name    = "Storage Blob Data Contributor"
+      description  = "Grant blob access to the storage integration service principal on the external stage storage account"
     }
-  )
+    deployment_principal_storage_blob_contributor = {
+      principal_id = local.config.projects.azhubs.client.service_principal.object_id
+      role_name    = "Storage Blob Data Contributor"
+      description  = "Grant blob data to deployment principal on the external stage storage account"
+    }
+    external_stage_system_topic = {
+      principal_id = azurerm_eventgrid_system_topic.sflz_external_stage_topic.identity[0].principal_id
+      role_name    = "Storage Queue Data Message Sender"
+      description  = "Grant send messages permission to Event Grid System Topic to send messages to the notification queue"
+    }
+    notification_mta_principal_queue_contributor = {
+      principal_id = azuread_service_principal.sflz_notification_mta[0].object_id
+      role_name    = "Storage Queue Data Contributor"
+      description  = "Grant queue access to the notification integration service principal on the external stage storage account"
+    }
+  }
 }

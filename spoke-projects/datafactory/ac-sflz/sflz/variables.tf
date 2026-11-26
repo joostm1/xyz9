@@ -87,6 +87,5 @@ locals {
   sharepoint_min_node_type   = upper(try(local.sharepoint_definitions[0].min_runtime_node_type, "SMALL"))
   openflow_node_type         = contains(["SMALL", "MEDIUM", "LARGE"], local.sharepoint_min_node_type) ? local.sharepoint_min_node_type : "SMALL"
   sharepoint_host            = local.sharepoint_configured ? regex("^https://([^/]+)", local.sharepoint.site_url)[0] : null
-  scim_integration_present   = length(snowflake_execute.snowflake_entraid_scim_present.query_results) > 0
   scim_endpoint_id           = try(snowflake_execute.snowflake_entraid_scim_endpoint[0].query_results[0].scim_endpoint_id, null)
 }

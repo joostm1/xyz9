@@ -13,6 +13,7 @@ resource "snowflake_grant_account_role" "project_roles" {
   parent_role_name = upper(var.entra_groups[each.key].display_name)
   role_name        = snowflake_account_role.project_roles[each.key].name
   provider         = snowflake.securityadmin
+  depends_on       = [azuread_synchronization_job.snowflake_entraid_scim]
 }
 # dataset data roles may read the shared Snowflake account identifier _secret_
 resource "azurerm_role_assignment" "dataset_roles_account_identifier" {

@@ -54,7 +54,8 @@ resource "azurerm_windows_virtual_machine" "shir" {
   name                       = local.resource_names.az.shir_vm
   resource_group_name        = local.config.projects.azhubs.spoke.rg.name
   location                   = local.config.projects.azhubs.spoke.rg.location
-  size                       = "Standard_B2als_v2"
+  # Standard_B2als_v2 has no allocation capacity in CentralIndia; B2s_v2 allocated for the hub NVA
+  size                       = "Standard_B2s_v2"
   admin_username             = azurerm_key_vault_secret.shir_admin_username.value
   admin_password             = azurerm_key_vault_secret.shir_admin_password.value
   allow_extension_operations = true

@@ -13,7 +13,7 @@ resource "snowflake_grant_privileges_to_account_role" "sysadmin_storage_integrat
   provider = snowflake.accountadmin
 }
 resource "snowflake_grant_privileges_to_account_role" "sysadmin_notification_integration_usage" {
-  count             = length(snowflake_execute.notification_integration_azure) > 0 ? 1 : 0
+  count             = 1
   account_role_name = "SYSADMIN"
   privileges        = ["USAGE"]
   on_account_object {
