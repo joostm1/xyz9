@@ -40,24 +40,27 @@ locals {
     }
     snowflake = {
       service_urls = {
-        svc = "snowflakecomputing.com"
-        app = "snowflake.app"
-      }
-      private_service_urls = {
-        svc = "privatelink.snowflakecomputing.com"
-        app = "privatelink.snowflake.app"
+        public = {
+          svc = "snowflakecomputing.com"
+          app = "snowflake.app"
+        }
+        private = {
+          svc = "privatelink.snowflakecomputing.com"
+          app = "privatelink.snowflake.app"
+        }
       }
       location_id = {
         west-europe = "amszqu"
       }
-      storage_integration      = upper("INT_STORAGE_sa${local.project.name}")
-      notification_integration = upper("INT_NOTIFICATION_sa${local.project.name}")
-      sso_integration          = "INT_SECURITY_SAML_SSO"
-      dbt_cloud_external_oauth = "INT_SECURITY_EXTERNAL_OAUTH_DBT_CLOUD"
-      scim_external_oauth      = "EXTERNAL_OAUTH_FOR_SCIM"
-      scim_integration         = "INT_SECURITY_SCIM"
-      scim_provisioner_role    = var.account.scim.provisioner_role
-      scim_service_user        = var.account.scim.service_user
+      storage_integration         = upper("INT_STORAGE_sa${local.project.name}")
+      notification_integration    = upper("INT_NOTIFICATION_sa${local.project.name}")
+      sso_integration             = "INT_SECURITY_SAML_SSO"
+      sso_integration_privatelink = "INT_SECURITY_SAML_SSO_PRIVATELINK"
+      dbt_cloud_external_oauth    = "INT_SECURITY_EXTERNAL_OAUTH_DBT_CLOUD"
+      scim_external_oauth         = "EXTERNAL_OAUTH_FOR_SCIM"
+      scim_integration            = "INT_SECURITY_SCIM"
+      scim_provisioner_role       = var.account.scim.provisioner_role
+      scim_service_user           = var.account.scim.service_user
       openflow = {
         admin_role           = "OPENFLOW_ADMIN"
         execute_as_role      = "OPENFLOW_SHAREPOINT_EXECUTE_AS_RL"

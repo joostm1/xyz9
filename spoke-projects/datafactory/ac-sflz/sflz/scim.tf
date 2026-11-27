@@ -45,7 +45,7 @@ resource "azuread_synchronization_secret" "snowflake_entraid_scim" {
   service_principal_id = "/servicePrincipals/${azuread_service_principal.snowflake_entraid_sso_principal.object_id}"
   credential {
     key   = "BaseAddress"
-    value = "https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.svc}/scim/v2/${local.scim_endpoint_id}/"
+    value = "https://${lower(var.account.identifier)}.${local.resource_names.snowflake.service_urls.public.svc}/scim/v2/${local.scim_endpoint_id}/"
   }
   credential {
     key   = "SecretToken"

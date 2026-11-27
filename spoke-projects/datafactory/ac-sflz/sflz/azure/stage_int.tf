@@ -67,22 +67,22 @@ resource "snowflake_execute" "pe_sflz_snowflake_service_approve_private_link" {
 # --- private DNS for Snowflake service URLs ---
 # dns A record for the account url, i.e.,  nq83813.west-europe.privatelink.snowflakecomputing.com IN A <private-ip>
 resource "azurerm_private_dns_a_record" "pe_sflz_snowflake_service_dns_a_record" {
-  name                = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.account_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
-  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
+  name                = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.account_url, ".${local.resource_names.snowflake.service_urls.private.svc}", "")
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.service_urls.private.svc}"
   ttl                 = 300
   records             = [azurerm_private_endpoint.pe_sflz_pvlinksvc.private_service_connection[0].private_ip_address]
 }
 # snowflakecomputing.com aliases as CNAMEs to _the_ A record
 resource "azurerm_private_dns_cname_record" "privatelink_snowflake_svc" {
   for_each = {
-    regionless_account_url   = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.regionless_account_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
-    ocsp_url                 = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.ocsp_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
-    regionless_snowsight_url = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.regionless_snowsight_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
-    snowsight_url            = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.snowsight_url, ".${local.resource_names.snowflake.private_service_urls.svc}", "")
+    regionless_account_url   = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.regionless_account_url, ".${local.resource_names.snowflake.service_urls.private.svc}", "")
+    ocsp_url                 = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.ocsp_url, ".${local.resource_names.snowflake.service_urls.private.svc}", "")
+    regionless_snowsight_url = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.regionless_snowsight_url, ".${local.resource_names.snowflake.service_urls.private.svc}", "")
+    snowsight_url            = replace(data.snowflake_system_get_privatelink_config.snowflake_private_link.snowsight_url, ".${local.resource_names.snowflake.service_urls.private.svc}", "")
     spcs_auth_url            = "sfc-endpoint-login.${local.resource_names.snowflake.location_id.west-europe}"
     spcs_registry_url        = "${lower(var.account.identifier)}.registry"
   }
-  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.service_urls.private.svc}"
   name                = each.value
   ttl                 = 300
   record              = azurerm_private_dns_a_record.pe_sflz_snowflake_service_dns_a_record.fqdn
@@ -94,7 +94,7 @@ resource "azurerm_private_dns_cname_record" "privatelink_snowflake_app" {
     spcs_runtime = "*.spcs.${local.resource_names.snowflake.location_id.west-europe}"
   }
   name                = each.value
-  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.app}"
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.service_urls.private.app}"
   ttl                 = 300
   record              = azurerm_private_dns_a_record.pe_sflz_snowflake_service_dns_a_record.fqdn
 }
@@ -114,7 +114,7 @@ moved {
 # CNAME `openflow-privatelink-url` at the Snowflake service private endpoint
 resource "azurerm_private_dns_cname_record" "openflow_privatelink" {
   name                = local.openflow_cname_name
-  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.private_service_urls.svc}"
+  private_dns_zone_id = "${local.private_dns_rg_id}/providers/Microsoft.Network/privateDnsZones/${local.resource_names.snowflake.service_urls.private.svc}"
   ttl                 = 300
   record              = azurerm_private_dns_a_record.pe_sflz_snowflake_service_dns_a_record.fqdn
 }

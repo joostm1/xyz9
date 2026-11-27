@@ -16,10 +16,14 @@ output "landing_zone" {
     }
     integrations = one(module.azure[*].integrations)
     sso = {
-      saml_app_id        = azuread_application.snowflake_entraid_sso_app.client_id
-      saml_app_name      = azuread_application.snowflake_entraid_sso_app.display_name
-      saml_app_object_id = azuread_application.snowflake_entraid_sso_app.object_id
-      saml_principal_id  = azuread_service_principal.snowflake_entraid_sso_principal.object_id
+      saml_app_id                    = azuread_application.snowflake_entraid_sso_app.client_id
+      saml_app_name                  = azuread_application.snowflake_entraid_sso_app.display_name
+      saml_app_object_id             = azuread_application.snowflake_entraid_sso_app.object_id
+      saml_principal_id              = azuread_service_principal.snowflake_entraid_sso_principal.object_id
+      saml_privatelink_app_id        = azuread_application.snowflake_entraid_sso_app_privatelink.client_id
+      saml_privatelink_app_name      = azuread_application.snowflake_entraid_sso_app_privatelink.display_name
+      saml_privatelink_app_object_id = azuread_application.snowflake_entraid_sso_app_privatelink.object_id
+      saml_privatelink_principal_id  = azuread_service_principal.snowflake_entraid_sso_principal_privatelink.object_id
     }
     scim = {
       scim_integration_name       = snowflake_scim_integration.snowflake_entraid_scim.name
